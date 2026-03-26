@@ -1,0 +1,108 @@
+/* =====================================================
+   BREADCRUMB WRAPPER
+===================================================== */
+.breadcrumb-list {
+  display: flex;
+  align-items: center;
+}
+
+/* =====================================================
+   BREADCRUMB BASE
+===================================================== */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 0;
+  padding: 0;
+  background: transparent;
+}
+
+/* =====================================================
+   BREADCRUMB ITEM
+===================================================== */
+.breadcrumb-item {
+  display: inline-flex;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  color: #374151;
+  transition: all 0.2s ease;
+  position: relative;
+  line-height: 1;
+}
+
+/* LINKS */
+.breadcrumb-item a {
+  color: #6b7280;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+/* HOVER */
+.breadcrumb-item:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.breadcrumb-item:hover a {
+  color: #111827;
+}
+
+/* =====================================================
+   SEPARATOR (ENTERPRISE STYLE)
+===================================================== */
+.breadcrumb-item + .breadcrumb-item::before {
+  content: "›";
+  font-size: 14px;
+  font-weight: 700;
+  color: #c4c4c4;
+  margin: 0 6px;
+  position: relative;
+  top: -1px;
+}
+
+/* =====================================================
+   ACTIVE ITEM (CURRENT PAGE)
+===================================================== */
+.breadcrumb-item.active {
+  background: linear-gradient(135deg, #8b0000, #b22222);
+  border-color: transparent;
+  color: #ffffff;
+  box-shadow: 0 6px 12px rgba(139, 0, 0, 0.18);
+}
+
+.breadcrumb-item.active span {
+  color: #ffffff;
+}
+
+/* Disable hover on active */
+.breadcrumb-item.active:hover {
+  background: linear-gradient(135deg, #8b0000, #b22222);
+}
+
+/* =====================================================
+   NON-CLICKABLE
+===================================================== */
+.breadcrumb-item span {
+  cursor: default;
+}
+
+/* =====================================================
+   MOBILE
+===================================================== */
+@media (max-width: 768px) {
+  .breadcrumb {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+
+  .breadcrumb-item {
+    font-size: 12px;
+    padding: 5px 12px;
+  }
+}

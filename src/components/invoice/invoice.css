@@ -1,0 +1,379 @@
+.invoice {
+  width: 210mm;
+  min-height: 297mm; /* A4 height */
+}
+
+/* Header Styling */
+.header {
+  color: #000;
+  text-align: center;
+  position: relative;
+  border-radius: 5px 5px 0 0;
+  border-bottom: 2px solid #000;
+}
+
+.header .header-top {
+  padding: 5px 10px;
+  display: block;
+  border-bottom: 2px solid #000;
+  font-size: 13px;
+  text-align: right;
+}
+
+.header .header-bottom {
+  display: flex;
+  border-bottom: 2px solid #000;
+}
+
+.header .header-bottom .left {
+  width: 15%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header .header-bottom .left img {
+  width: 110px;
+}
+
+.header .header-bottom .center {
+  width: 70%;
+}
+
+.header .header-bottom .center .center-top {
+  padding: 4px 0px;
+}
+
+.header .header-bottom .center .center-top h1 {
+  margin: 0;
+  font-size: 50px;
+}
+
+.header .header-bottom .center .center-top h1 sup {
+  font-size: 20px;
+}
+
+.header .header-bottom .center .center-bottom {
+  font-size: 16px;
+  color: #000;
+  padding: 1px;
+}
+
+.header .header-bottom .center .center-bottom p {
+  font-weight: 700;
+  margin-bottom: 0px;
+}
+
+.header .header-bottom .right {
+  width: 15%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.header .header-bottom .right img {
+  width: 100px;
+}
+
+.quote-box {
+  padding: 10px;
+}
+
+.quote-box p {
+  font-size: 16px;
+  margin: 2px 0px;
+}
+
+.quote-box .big {
+  font-size: 18px;
+  margin: 10px 0px;
+}
+
+.copy-type {
+  margin: 2px 0px;
+  font-size: 13px;
+  color: #000;
+  text-align: right;
+}
+
+/* Info Section */
+.info-section {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 2px solid #000;
+  border-top: none;
+  font-size: 13px;
+}
+
+.info-section .contact-info {
+  width: 60%;
+}
+
+.info-section .contact-info .padd {
+  padding: 0px 10px;
+}
+
+.info-section .contact-info .padd p {
+  margin-bottom: 6px;
+  margin-top: 0px;
+}
+
+.info-section .contact-info .padd p:first-child {
+  margin-top: 5px;
+}
+
+.info-section .contact-info .padd p:last-child {
+  margin-bottom: 0px;
+}
+
+.info-section .invoice-details {
+  width: 40%;
+  border-left: 2px solid #000;
+  text-align: center;
+}
+
+.info-section .invoice-details .padd-1 {
+  padding: 0px 0px;
+  text-align: left;
+}
+
+.info-section .invoice-details .padd-1 p {
+  margin-bottom: 5px;
+  margin-top: 2px;
+  border-bottom: 2px solid #000;
+  padding: 1px 20px;
+}
+.info-section .invoice-details .padd-1 p:last-child {
+  border-bottom: none;
+  margin-bottom: 0px;
+}
+
+.info-section .date-info {
+  padding: 5px 10px;
+  color: #000;
+}
+
+/* Customer Section */
+.customer-section {
+  border-bottom: 2px solid #000;
+  border-top: none;
+
+  font-size: 13px;
+}
+
+.customer-section .customer-section-top {
+  padding: 5px;
+  background: #f2f2f2;
+}
+
+.customer-section .customer-section-top p {
+  margin: 0px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.customer-section .customer-address {
+  padding: 10px;
+}
+
+.customer-section .customer-address p {
+  margin-bottom: 0px;
+}
+
+.customer-section .customer-address strong {
+  margin-bottom: 5px;
+}
+
+.empty-row::after {
+  content: "";
+  display: block;
+  min-height: 100px;
+}
+.empty-row-new::after {
+  content: "";
+  display: block;
+  min-height: 40px;
+}
+/* Table Styling */
+.invoice-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-top: none;
+}
+
+.invoice-row td {
+  height: 2.5em; /* row height */
+  padding: 6px 5px;
+  vertical-align: middle;
+}
+
+.invoice-table th {
+  background-color: #f2f2f2;
+  border-bottom: 2px solid #000 !important;
+  border-right: 2px solid #000 !important;
+  padding: 3px;
+  font-size: 13px;
+}
+.invoice-table th:last-child {
+  border-right: none !important;
+}
+.invoice-table td {
+  border-right: 2px solid #000 !important;
+  padding: 5px;
+  font-size: 13px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.invoice-table td:last-child {
+  border-right: none !important;
+}
+.border-none {
+  border-top: none !important;
+}
+.text-left {
+  text-align: left;
+}
+
+.empty-row td {
+  height: 20px;
+}
+
+.footer-body tr {
+  border-top: 2px solid #000;
+}
+
+.grand-total {
+  background-color: #ffff00;
+  font-size: 18px;
+  color: #a52a2a;
+}
+
+.bank-details {
+  padding: 0px;
+  text-align: left;
+}
+
+.signature {
+  font-weight: bold;
+  display: flex;
+  flex-direction: column;
+  height: 100px;
+  justify-content: space-between;
+}
+
+.clear {
+  clear: both;
+}
+
+.disclaimer {
+  font-size: 13px;
+  text-align: center;
+  padding: 5px;
+}
+
+.disclaimer span {
+  color: #a52a2a;
+}
+
+.invoice-body td {
+  font-weight: 800;
+}
+
+.invoice-table tbody.invoice-body {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+  flex: 1; /* 🔥 absorbs empty space */
+}
+
+.invoice-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.invoice-table thead {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+.invoice-table tbody.footer-body {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+.footer-body {
+  page-break-inside: auto;
+}
+
+@media print {
+  /* Hide everything by default */
+  body * {
+    visibility: hidden;
+  }
+
+  /* Show only invoice */
+  .invoice-container,
+  .invoice-container * {
+    visibility: visible;
+  }
+
+  /* Remove margins added by browser */
+  @page {
+    margin: 10mm;
+    size: A4;
+  }
+}
+@media print {
+  .sidebar,
+  .topbar,
+  .navbar,
+  header,
+  .footer {
+    display: none !important;
+  }
+  .dashboard_container {
+    padding: 0px !important;
+  }
+}
+
+@media print {
+  .invoice-container {
+    height: auto !important;
+    min-height: unset !important;
+    page-break-after: auto !important;
+  }
+
+  table {
+    border-collapse: collapse;
+    page-break-inside: auto;
+  }
+
+  .invoice-body tr {
+    page-break-inside: auto;
+    break-inside: auto;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* PRINT RULES */
+@media print {
+  /* A4 page setup */
+  @page {
+    size: A4;
+  }
+
+  .invoice-footer {
+    page-break-inside: auto;
+  }
+
+  /* Each footer row behaves independently */
+  .invoice-footer tr {
+    page-break-inside: auto;
+  }
+}

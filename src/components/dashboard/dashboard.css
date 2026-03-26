@@ -1,0 +1,18 @@
+.dashboard_main {
+  position: relative;
+  width: calc(100% - 230px);
+  margin-left: 230px;
+}
+.dashboard_container {
+  padding: 15px;
+}
+
+/* ===============================
+   RESPONSIVE (MOBILE)
+================================= */
+@media (max-width: 768px) {
+  .dashboard_main {
+    margin-left: 0px;
+    width: 100%;
+  }
+}

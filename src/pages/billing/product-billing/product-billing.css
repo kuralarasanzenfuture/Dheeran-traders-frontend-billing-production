@@ -1,0 +1,373 @@
+.product-list-box {
+  background: #fff;
+  padding: 25px;
+  box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+  border-radius: 20px;
+}
+.product-list-box .box-title {
+  margin-bottom: 15px;
+  font-size: 18px;
+  color: #000;
+}
+/* ======================
+   FIX BILLING LAYOUT
+====================== */
+/* ===============================
+   BILLING LAYOUT FIX (FINAL)
+================================ */
+.product-billing {
+  width: 100%;
+  padding: 0px; /* 👈 adds breathing space */
+  box-sizing: border-box;
+}
+
+/* ONLY remove bootstrap overflow, NOT spacing */
+.product-billing > .row {
+  margin-left: -8px;
+  margin-right: -8px;
+}
+
+.product-billing > .row > [class*="col-"] {
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+/* ===============================
+   FIX BOOTSTRAP ROW OVERFLOW
+   INSIDE DASHBOARD LAYOUT
+=/* ===============================
+   BILLING PAGE LAYOUT (FINAL)
+================================ */
+
+.product-billing {
+  width: 100%;
+  max-width: 100%;
+  padding: 0px; /* space from sidebar */
+  box-sizing: border-box;
+}
+
+/* prevent horizontal overflow only */
+.product-billing .row {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+/* keep invoice aligned */
+.invoice-box {
+  position: sticky;
+  top: 90px;
+}
+
+.product-list-box .box-title i {
+  margin-right: 10px;
+  color: var(--main-color);
+}
+.product-list-box .form-control,
+.product-list-box .form-select {
+  padding: 10px 12px;
+  font-size: 14px;
+  border-radius: 8px;
+  background-color: transparent;
+  border: 1px solid #ccc;
+  color: #444;
+  outline: none !important;
+}
+.product-list-box .form-control-sm,
+.product-list-box .form-select-sm {
+  padding: 8px 10px !important;
+  font-size: 12px !important;
+}
+.product-list-box .form-control,
+.product-list-box .form-select::placeholder {
+  color: #444;
+}
+.product-list-box .form-label {
+  color: #000;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+.product-list-box .form-control:focus {
+  border-color: var(--main-color);
+  box-shadow: none !important ;
+}
+.product-list-box .form-control.readonly ,
+.product-list-box .form-select.readonly {
+  background-color: #f0f0f0;
+  color: gray;
+}
+.staff-phone {
+  background-color: #f0f0f0;
+  cursor: not-allowed;
+  pointer-events: none;
+  opacity: 0.9;
+}
+
+/* Header */
+.invoice-box .invoice-header {
+  margin-bottom: 20px;
+}
+
+.invoice-box .title {
+  color: var(--main-color);
+  font-size: 15px;
+  font-weight: 400;
+}
+
+.invoice-box .invoice-no {
+  font-size: 12px;
+  color: #444;
+}
+
+.invoice-box .date {
+  font-size: 15px;
+  font-weight: 400;
+  color: #000;
+}
+
+.invoice-box .due {
+  font-size: 12px;
+  color: #444;
+}
+
+.invoice-box .right {
+  text-align: right;
+}
+
+/* Bill Info */
+.invoice-box .bill-info {
+  margin-bottom: 20px;
+}
+
+.invoice-box .label {
+  font-size: 12px;
+  color: var(--main-color);
+  margin-bottom: 4px;
+}
+
+.invoice-box .name {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.invoice-box .text {
+  font-size: 12px;
+  color: #444;
+  word-break: break-all;
+}
+
+/* PRODUCT DETAILS */
+.invoice-box .products {
+  margin-bottom: 16px;
+}
+
+.invoice-box .products .product-head {
+  font-size: 12px;
+  color: #444;
+  margin-bottom: 10px;
+  margin-top: 8px;
+}
+
+.invoice-box .products .product-row {
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
+.invoice-box .products .center {
+  text-align: center;
+}
+
+/* RADIO CARD PAYMENT MODE */
+.invoice-box .radio-card {
+  display: block;
+  background: #efefef;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 12px;
+  text-align: center;
+  cursor: pointer;
+  color: #000;
+  font-size: 12px;
+}
+.invoice-box .radio-card .icon {
+  font-size: 20px;
+  margin-bottom: 5px;
+}
+.invoice-box .radio-card input {
+  display: none;
+}
+
+.invoice-box .radio-card.active {
+  border-color: var(--main-color);
+  background: #8f0c000f;
+  color: var(--main-color);
+}
+
+/* Amounts */
+.invoice-box .amounts {
+  border-top: 1px solid #ccc;
+  padding-top: 12px;
+  margin-bottom: 16px;
+}
+
+.invoice-box .amounts .row {
+  margin-bottom: 6px;
+}
+.invoice-box .amount-text {
+  font-size: 12px;
+  margin-bottom: 0px;
+}
+.invoice-box .grand .amount-text {
+  margin-top: 5px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.invoice-box .grand .right .amount-text {
+  color: var(--main-color);
+}
+
+/* Payment */
+.invoice-box .payment-values {
+  margin-bottom: 18px;
+}
+.invoice-box .payment-values .label {
+  color: #444;
+}
+.invoice-box .payment-values input {
+  width: 100%;
+  background: #efefef;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 8px;
+  font-size: 13px;
+  color: #444;
+}
+
+.invoice-box .payment-values input.danger {
+  color: var(--main-color);
+}
+
+/* Payment mode */
+.invoice-box .payment-mode {
+  margin-bottom: 20px;
+}
+.invoice-box .payment-mode .label {
+  color: #444;
+  text-transform: capitalize;
+}
+.invoice-box .mode {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #1e293b;
+  background: #020617;
+  color: #9ca3af;
+  cursor: pointer;
+}
+
+.invoice-box .mode.active {
+  border-color: #3b82f6;
+  color: #3b82f6;
+  background: rgba(59, 130, 246, 0.1);
+}
+
+/* Generate */
+.invoice-box .generate {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  background: #1e88ff;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Footer */
+.invoice-box .invoice-footer {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 12px;
+  font-size: 12px;
+  color: #444;
+}
+.invoice-box .invoice-footer a {
+  color: #444;
+}
+.list-group {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.position-absolute {
+  background: #fff;
+}
+.position-relative {
+  position: relative;
+}
+
+.list-group {
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 9999;
+}
+.staff-mini-bar {
+  display: flex;
+  gap: 10px;
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  align-items: center;
+}
+
+.staff-chip {
+  font-size: 13px;
+  background: #fff;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid #ddd;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+/* ================= STAFF SMALL HEADER ================= */
+
+.staff-small-box {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 8px 12px; /* 🔥 smaller padding */
+  margin-bottom: 12px;
+}
+
+.staff-label {
+  font-size: 11px; /* 🔥 small label */
+  font-weight: 500;
+  margin-bottom: 2px;
+  color: #555;
+}
+
+.staff-input {
+  height: 30px; /* 🔥 reduce height */
+  font-size: 13px;
+  padding: 4px 8px;
+}
+
+/* shrink suggestion list */
+.staff-small-box .list-group-item {
+  font-size: 13px;
+  padding: 4px 8px;
+}
+/* Remove number input arrows - Chrome, Edge, Safari */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Remove number input arrows - Firefox */
+input[type="number"] {
+  -moz-appearance: textfield;
+}

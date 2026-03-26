@@ -1,0 +1,167 @@
+/* ================= MODAL OVERLAY ================= */
+.erp-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+/* ================= MODAL CONTAINER ================= */
+.erp-modal-container {
+  width: 100%;
+  max-width: 620px;
+  max-height: 90vh;
+  outline: none;
+}
+
+/* ================= MODAL CARD ================= */
+.erp-modal-card {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: erpModalFade 0.25s ease;
+}
+
+/* ================= HEADER ================= */
+.erp-modal-header {
+  padding: 14px 18px;
+  background: #8b0000; /* ERP theme red */
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.erp-modal-header h5 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.erp-modal-header .btn-close {
+  filter: invert(1);
+  opacity: 0.9;
+}
+
+/* ================= BODY ================= */
+.erp-modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  max-height: calc(90vh - 60px);
+}
+
+/* ================= INPUTS & TEXT ================= */
+.erp-modal-body p {
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+.erp-modal-body hr {
+  margin: 12px 0 18px;
+}
+/* ================= TABLE ALIGNMENT ================= */
+
+.common-table th,
+.common-table td {
+  vertical-align: middle;
+}
+
+/* Numbers look better centered */
+.common-table th.text-center,
+.common-table td.text-center {
+  text-align: center;
+}
+
+/* Action column aligned right */
+.common-table th.text-end,
+.common-table td.text-end {
+  text-align: right;
+}
+
+/* Action buttons layout */
+.action-btn-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Button consistency */
+.action-btn-group .btn {
+  min-width: 110px;
+  padding: 6px 10px;
+}
+
+/* Improve row spacing */
+.common-table tbody tr {
+  height: 52px;
+}
+
+/* ================= ACTION ICON BUTTONS ================= */
+
+.action-icon-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.action-icon-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 6px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 15px;
+  color: #fff;
+}
+
+/* Add Payment */
+.action-icon-btn.action-pay {
+  background-color: #8b0000; /* theme red */
+}
+
+/* View */
+.action-icon-btn.action-view {
+  background-color: #6c757d;
+}
+
+/* Hover */
+.action-icon-btn:hover {
+  opacity: 0.9;
+}
+
+/* Icon alignment */
+.action-icon-btn i {
+  line-height: 1;
+}
+
+/* ================= ANIMATION ================= */
+@keyframes erpModalFade {
+  from {
+    transform: translateY(-15px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 576px) {
+  .erp-modal-container {
+    max-width: 95%;
+  }
+
+  .erp-modal-body {
+    padding: 16px;
+  }
+}

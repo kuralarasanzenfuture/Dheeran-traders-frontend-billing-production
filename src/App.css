@@ -1,0 +1,429 @@
+@import url("https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,100..900;1,100..900&display=swap");
+@import url("https://cdn-uicons.flaticon.com/3.0.0/uicons-thin-rounded/css/uicons-thin-rounded.css");
+@import url("https://cdn-uicons.flaticon.com/3.0.0/uicons-brands/css/uicons-brands.css");
+@import url("https://cdn-uicons.flaticon.com/3.0.0/uicons-solid-straight/css/uicons-solid-straight.css");
+@import url("https://cdn-uicons.flaticon.com/3.0.0/uicons-regular-straight/css/uicons-regular-straight.css");
+
+:root {
+  --public-sans-family: "Public Sans", sans-serif;
+  --padding-manual: 50px 0px;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-size: 14px;
+  font-family: var(--public-sans-family) !important;
+  background: #fafafb;
+  overflow-x: hidden;
+}
+.popup-message {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 14px 26px;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #333;
+  font-weight: 500;
+  z-index: 99999;
+  display: flex;
+  backdrop-filter: blur(2px);
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  border-left: 6px solid transparent;
+
+  animation: fadeSlide 0.3s ease-in-out;
+}
+
+/* SUCCESS */
+.popup-message.success {
+  border-left-color: #28a745;
+  color: #28a745;
+}
+
+/* ERROR */
+.popup-message.error {
+  border-left-color: #dc3545;
+  color: #dc3545;
+}
+.employee-expand-row {
+  background: #fafafa;
+}
+
+.employee-expand-box {
+  padding: 14px 18px;
+  border-left: 4px solid #8b0000;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 8px 20px;
+  font-size: 14px;
+}
+.btn.bg-transparent i {
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.btn.bg-transparent:hover i {
+  color: #000;
+  transform: scale(1.1);
+}
+
+.modal {
+  z-index: 1055 !important;
+}
+
+.modal-backdrop {
+  z-index: 1050 !important;
+}
+.list-group {
+  max-height: 180px;
+  overflow-y: auto;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  background: #fff;
+  cursor: pointer;
+  z-index: 1000;
+}
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+}
+
+.modal-box {
+  background: #fff;
+  width: 90%;
+  max-width: 900px;
+  border-radius: 8px;
+  padding: 20px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.modal-header button {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.common-table td {
+  vertical-align: middle;
+}
+
+.common-table input:disabled {
+  background-color: #f8f9fa;
+  cursor: not-allowed;
+}
+
+.common-table .btn {
+  line-height: 1;
+}
+.detail-box {
+  padding: 15px;
+  background: #fafafa;
+  border-left: 4px solid #8b0000;
+  border-radius: 4px;
+}
+/* Expanded row background */
+.detail-row td {
+  background: #fff;
+  border-top: none;
+}
+
+/* Card style like employee details */
+.detail-card {
+  padding: 16px;
+  background: #fafafa;
+  border-left: 4px solid #8b0000;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+/* Labels */
+.detail-card strong {
+  font-size: 13px;
+  color: #333;
+}
+
+/* Values */
+.detail-card div {
+  font-size: 14px;
+}
+/* ===== REPORT HEADER ===== */
+.report-header {
+  padding-bottom: 10px;
+  border-bottom: 2px solid #8b0000;
+}
+
+.search-box {
+  position: relative;
+  width: 260px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 8px 35px 8px 12px;
+  border-radius: 20px;
+  border: none;
+  background: #f2f2f2;
+  outline: none;
+}
+
+.search-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #777;
+}
+
+.date-input {
+  width: 140px;
+}
+
+.date-label {
+  color: #8b0000;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.edit-popover {
+  position: absolute;
+  right: 60px;          /* adjust to sit near edit icon */
+  top: 50%;
+  transform: translateY(-50%);
+  width: 220px;
+  padding: 10px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 1000;
+}
+  .modal-backdrop.show {
+  background-color: rgba(0, 0, 0, 0.55);
+}
+
+.modal-dialog {
+  max-width: 800px;
+  margin: auto;
+}
+
+.modal-content {
+  border-radius: 10px;
+}
+/* ===== ERP MODAL FIX ===== */
+
+.erp-modal-overlay {
+  background: rgba(0, 0, 0, 0.55);
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* THIS PREVENTS FULL-WIDTH BUG */
+.erp-modal-container {
+  outline: none;
+  width: 100%;
+  max-width: 900px;   /* 👈 SAME AS EMPLOYEE MODAL */
+}
+
+/* ACTUAL MODAL CARD */
+.erp-modal-card {
+  background: #fff;
+  border-radius: 8px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+/* HEADER */
+.erp-modal-header {
+  padding: 14px 18px;
+  border-bottom: 1px solid #e5e5e5;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* BODY SCROLL ONLY */
+.erp-modal-body {
+  padding: 18px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+/* Remove number input arrows - Chrome, Edge, Safari */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Remove number input arrows - Firefox */
+input[type="number"] {
+   -moz-appearance: textfield;
+}
+/* ===============================
+   CUSTOMER BILLING REPORT FIXES
+   =============================== */
+
+/* --- Table must allow floating UI --- */
+.common-table-wrapper {
+  overflow: visible !important;
+}
+
+.common-table {
+  overflow: visible !important;
+}
+
+.common-table tr,
+.common-table td {
+  overflow: visible !important;
+  position: relative;
+}
+
+/* --- Date + Time column fix --- */
+.common-table td:nth-child(3) {
+  white-space: normal !important;
+  min-width: 180px;
+}
+
+/* ===============================
+   DELETE PASSWORD FLOATING CARD
+   =============================== */
+
+/* ===== COMPACT DELETE PASSWORD CARD ===== */
+
+.delete-password-card {
+  width: 200px;
+  background: #fff;
+  border-radius: 8px;
+  padding: 10px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.18);
+  font-size: 13px;
+}
+
+/* Title */
+.delete-password-card .fw-semibold {
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+/* Password input */
+.delete-password-card input {
+  font-size: 13px;
+  padding: 6px 8px;
+}
+
+.delete-password-card button {
+  font-size: 13px;
+  padding: 6px;
+}
+
+.report-header {
+  flex-wrap: wrap;
+}
+
+.search-box {
+  width: 280px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 8px 35px 8px 12px;
+  border-radius: 20px;
+  border: 1px solid #ddd;
+}
+
+.search-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+}
+
+.excel-btn {
+  background: #16a34a;
+  color: #fff;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 6px;
+}
+
+.excel-btn:hover {
+  background: #15803d;
+}
+
+
+/* Normal pagination text */
+.pagination .page-link {
+  color: #dc3545;
+  border-radius: 6px;
+  margin: 0 3px;
+}
+.pagination .page-item.active .page-link{
+  background-color: var(--gradient-color) !important;
+}
+/* Remove Bootstrap blue focus shadow */
+.pagination .page-link:focus {
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* Active page - RED */
+.pagination .page-item.active .page-link {
+  background-color: #dc3545 !important;
+  border-color: #dc3545 !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+.pagination .page-item.active >.page-link{
+   background-color: var(--main-color) !important;
+  border-color: var(--main-color) !important;
+}
+
+/* Hover effect */
+.pagination .page-link:hover {
+  background-color: #f8d7da;
+  border-color: #dc3545;
+  color: #dc3545;
+}
+
+/* Disabled buttons */
+.pagination .page-item.disabled .page-link {
+  color: #aaa;
+  background-color: #f8f9fa;
+}
+
+
+
+@keyframes fadeSlide {
+  from {
+    opacity: 0;
+    top: 0;
+  }
+  to {
+    opacity: 1;
+    top: 20px;
+  }
+}
+

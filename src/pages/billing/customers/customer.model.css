@@ -1,0 +1,138 @@
+/* ================================
+   CUSTOMER MODAL (CUSTOM)
+================================ */
+
+.custom-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+
+.custom-modal {
+  margin-top: -6vh;   /* 👈 subtle lift */
+}
+
+.custom-modal {
+  background: #fff;
+  width: 90%;
+  max-width: 1100px;
+  border-radius: 10px;
+  padding: 18px 20px 22px;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
+  animation: modalFadeIn 0.2s ease-in-out;
+}
+
+/* Header */
+.customer-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.customer-modal-header h5 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Close button */
+.modal-close-btn {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  line-height: 1;
+  color: #333;
+}
+
+.modal-close-btn:hover {
+  color: #dc3545;
+}
+
+/* Body */
+.modal-body {
+  padding-top: 6px;
+}
+
+/* ================================
+   FORM STYLES
+================================ */
+
+.customer-modal-form label {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.customer-modal-form .form-control {
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+.customer-modal-form .form-control:focus {
+  border-color: #dc3545;
+  box-shadow: 0 0 0 0.15rem rgba(220, 53, 69, 0.25);
+}
+
+.customer-modal-form textarea {
+  resize: none;
+}
+
+.customer-modal-form .row {
+  row-gap: 16px;
+}
+
+/* Validation */
+.customer-modal-form .invalid-feedback {
+  font-size: 12px;
+  margin-top: 4px;
+}
+/* Header alignment */
+.customer-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+/* Close button */
+.modal-close-btn {
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  line-height: 1;
+  color: #333;
+}
+
+.modal-close-btn:hover {
+  color: #dc3545;
+}
+
+/* Save button */
+.customer-modal-form .btn-danger {
+  padding: 8px 22px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+/* Animation */
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
