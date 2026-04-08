@@ -23,7 +23,7 @@ export const AddQuantity = () => {
   /* ================= VALIDATION ERROR ================= */
   const [error, setError] = useState("");
 
-  const UNITS = ["Qty", "Kg", "Litre", "Pack", "Unit", "Others"];
+  const UNITS = ["Qty", "Kg","g", "Litre","Ml", "Pack", "Unit", "Others"];
 
   useEffect(() => {
     loadData();
@@ -158,18 +158,26 @@ if (endPage > totalPages) {
                 </select>
               </div>
 
-              <div className="col-md-3">
+            <div className="col-md-3">
                 <input
-                  type="number"
-                  min="1"
+                  type="text"
                   className="form-control"
-                  placeholder="Quantity Amount (e.g. 10)"
+                  placeholder="Quantity Amount (e.g. 0.5)"
                   value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                    onWheel={(e) => e.target.blur()} 
+                 onChange={(e) => {
+                    const value = e.target.value;
+                    if (/^\d*\.?\d*$/.test(value)) {
+                      setAmount(value);
+                    }
+                  }}
+                  onBlur={(e) => {
+                    if (e.target.value.startsWith(".")) {
+                      setAmount("0" + e.target.value);
+                    }
+                  }}
+                  onWheel={(e) => e.target.blur()}
                 />
               </div>
-
               <div className="col-md-3">
                 <select className="form-select" value={unit} onChange={(e) => setUnit(e.target.value)}>
                   {UNITS.map((u) => (

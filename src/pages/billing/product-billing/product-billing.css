@@ -371,3 +371,20 @@ input[type="number"]::-webkit-outer-spin-button {
 input[type="number"] {
   -moz-appearance: textfield;
 }
+
+.gst-suggestion-list {
+  font-size: 11px;        /* 🔽 reduce font */
+  max-height: 120px;      /* limit height */
+  overflow-y: auto;       /* scroll */
+  padding: 0;
+  margin: 0;
+}
+
+.gst-suggestion-item {
+  padding: 4px 8px;       /* 🔽 smaller spacing */
+  cursor: pointer;
+}
+
+.gst-suggestion-item:hover {
+  background-color: #f1f1f1;
+}

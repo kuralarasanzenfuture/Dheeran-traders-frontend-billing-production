@@ -59,17 +59,22 @@ export const ProductBilling = () => {
   const [vehicleNumber, setVehicleNumber] = useState("");
   const [ewayBillNumber, setEwayBillNumber] = useState("");
   const [allGSTNumbers, setAllGSTNumbers] = useState([]);
+  const [gstLoaded, setGstLoaded] = useState(false);
   //const [gstPercent, setGstPercent] = useState(0);
-  const [cashAmount, setCashAmount] = useState(0);
-  const [upiAmount, setUpiAmount] = useState(0);
-  const [chequeAmount, setChequeAmount] = useState(0);
+  const [cashAmount, setCashAmount] = useState("");
+  const [upiAmount, setUpiAmount] = useState("");
+  const [chequeAmount, setChequeAmount] = useState("");
   const [selectedBankId, setSelectedBankId] = useState(null);
   const navigate = useNavigate();
   const [banks, setBanks] = useState([]);
   const [company, setCompany] = useState(null);
   const [paymentMode, setPaymentMode] = useState("cash");
   const [errors, setErrors] = useState({});
-  const advancePaid = cashAmount + upiAmount + chequeAmount;
+ const advancePaid =
+  Number(cashAmount || 0) +
+  Number(upiAmount || 0) +
+  Number(chequeAmount || 0);
+
 
   useEffect(() => {
     if (!id) return;
@@ -131,19 +136,23 @@ export const ProductBilling = () => {
  useEffect(() => {
   const loadGST = async () => {
     try {
-      const res = await api.get("/customer-billing"); // already exists
-       console.log(res.data)
+      const res = await api.get("/customer-billing");
+
+      console.log("API DATA:", res.data);
+
       const gstList = (res.data || [])
         .map((b) => b.company_gst_number)
-        .filter(Boolean);
+        .filter((g) => g && g.trim() !== ""); // 🔥 strong filter
 
       const uniqueGST = [...new Set(gstList)];
 
       setAllGSTNumbers(uniqueGST);
+      setGstLoaded(true);   // ✅ mark loaded
 
-      console.log("GST LIST:", uniqueGST); // ✅ check this
+      console.log("GST LIST:", uniqueGST);
     } catch (err) {
       console.error("GST fetch error", err);
+      setGstLoaded(true);
     }
   };
 
@@ -471,9 +480,9 @@ export const ProductBilling = () => {
         bank_id: selectedBankId,
         //    tax_gst_percent: gstPercent,
         advance_paid: advancePaid,
-        cash_amount: cashAmount,
-        upi_amount: upiAmount,
-        cheque_amount: chequeAmount,
+        cash_amount: Number(cashAmount || 0),
+        upi_amount: Number(upiAmount || 0),
+        cheque_amount: Number(chequeAmount || 0),
         products: validProducts.map((p) => ({
           product_id: p.product_id,
           quantity: Number(p.sell_qty),
@@ -951,6 +960,26 @@ const productOptions = productsList.map((p) => ({
       setSelectedProduct(selected.product);
     }}
     isSearchable
+      styles={{
+    control: (base) => ({
+      ...base,
+      fontSize: "14px",   // 🔽 input text size
+      minHeight: "32px"
+    }),
+    menu: (base) => ({
+      ...base,
+      fontSize: "12px"    // 🔽 dropdown font size
+    }),
+    option: (base) => ({
+      ...base,
+      fontSize: "12px",   // 🔽 each option
+      padding: "6px 10px"
+    }),
+    singleValue: (base) => ({
+      ...base,
+      fontSize: "12px"
+    }),
+  }}
   />
 </div>
                     <div className="col-md-3">
@@ -1096,12 +1125,15 @@ const productOptions = productsList.map((p) => ({
                     type="text"
                     placeholder="Company GST Number"
                     value={companyGSTNumber}
-                    onChange={(e) => {
+                   onChange={(e) => {
                       const value = e.target.value.toUpperCase();
 
                       if (value.length > 15) return;
 
                       setCompanyGSTNumber(value);
+
+                      // ❗ wait until data loaded
+                      if (!gstLoaded) return;
 
                       if (!value) {
                         setGstSuggestions([]);
@@ -1118,20 +1150,20 @@ const productOptions = productsList.map((p) => ({
                   />
 
                   {gstSuggestions.length > 0 && (
-                    <ul className="list-group position-absolute w-100 shadow bg-white z-3">
-                      {gstSuggestions.map((gst, i) => (
-                        <li
-                          key={i}
-                          className="list-group-item list-group-item-action"
-                          onMouseDown={() => {
-                            setCompanyGSTNumber(gst);
-                            setGstSuggestions([]);
-                          }}
-                        >
-                          {gst}
-                        </li>
-                      ))}
-                    </ul>
+                   <ul className="list-group position-absolute w-100 shadow bg-white z-3 gst-suggestion-list">
+  {gstSuggestions.map((gst, i) => (
+    <li
+      key={i}
+      className="list-group-item gst-suggestion-item"
+      onMouseDown={() => {
+        setCompanyGSTNumber(gst);
+        setGstSuggestions([]);
+      }}
+    >
+      {gst}
+    </li>
+  ))}
+</ul>
                   )}
                 </div>
                 <input
@@ -1388,18 +1420,26 @@ const productOptions = productsList.map((p) => ({
                       min="0"
                       value={cashAmount}
                       disabled={isEdit}
-                      onChange={(e) => {
-                        let val = Number(e.target.value) || 0;
+                   onChange={(e) => {
+  const value = e.target.value;
 
-                        const newTotal = val + upiAmount + chequeAmount;
+  // ✅ allow only numbers + decimal
+  if (!/^\d*\.?\d*$/.test(value)) return;
 
-                        if (newTotal > grandTotal) {
-                          toast.error("Advance cannot exceed Grand Total");
-                          return;
-                        }
+  // ✅ safe calculation
+  const newTotal =
+    Number(value || 0) +
+    Number(upiAmount || 0) +
+    Number(chequeAmount || 0);
 
-                        setCashAmount(val);
-                      }}
+  if (newTotal > grandTotal) {
+    toast.error("Advance cannot exceed Grand Total");
+    return;
+  }
+
+  // ✅ store as string (important)
+  setCashAmount(value);
+}}
                       onWheel={(e) => e.target.blur()}
                     />
                   )}
@@ -1425,18 +1465,26 @@ const productOptions = productsList.map((p) => ({
                       min="0"
                       value={upiAmount}
                       disabled={isEdit}
-                      onChange={(e) => {
-                        let val = Number(e.target.value) || 0;
+                   onChange={(e) => {
+  const value = e.target.value;
 
-                        const newTotal = cashAmount + val + chequeAmount;
+  // ✅ allow only numbers + decimal
+  if (!/^\d*\.?\d*$/.test(value)) return;
 
-                        if (newTotal > grandTotal) {
-                          toast.error("Advance cannot exceed Grand Total");
-                          return;
-                        }
+  // ✅ safe calculation
+  const newTotal =
+    Number(cashAmount || 0) +
+    Number(value || 0) +
+    Number(chequeAmount || 0);
 
-                        setUpiAmount(val);
-                      }}
+  if (newTotal > grandTotal) {
+    toast.error("Advance cannot exceed Grand Total");
+    return;
+  }
+
+  // ✅ store as string (important)
+  setUpiAmount(value);
+}}
                       onWheel={(e) => e.target.blur()}
                     />
                   )}
@@ -1462,18 +1510,26 @@ const productOptions = productsList.map((p) => ({
                       min="0"
                       value={chequeAmount}
                       disabled={isEdit}
-                      onChange={(e) => {
-                        let val = Number(e.target.value) || 0;
+                    onChange={(e) => {
+  const value = e.target.value;
 
-                        const newTotal = cashAmount + upiAmount + val;
+  // ✅ allow only numbers + decimal
+  if (!/^\d*\.?\d*$/.test(value)) return;
 
-                        if (newTotal > grandTotal) {
-                          toast.error("Advance cannot exceed Grand Total");
-                          return;
-                        }
+  // ✅ safe calculation
+  const newTotal =
+    Number(cashAmount || 0) +
+    Number(upiAmount || 0) +
+    Number(value || 0);
 
-                        setChequeAmount(val);
-                      }}
+  if (newTotal > grandTotal) {
+    toast.error("Advance cannot exceed Grand Total");
+    return;
+  }
+
+  // ✅ store as string (important)
+  setChequeAmount(value);
+}}
                       onWheel={(e) => e.target.blur()}
                     />
                   )}
@@ -1485,7 +1541,13 @@ const productOptions = productsList.map((p) => ({
             <button
               className="main-btn w-100 text-center d-block"
               onClick={handleSaveBilling}
-              disabled={cashAmount + upiAmount - grandTotal > 0.01}
+              disabled={
+                Number(cashAmount || 0) +
+                  Number(upiAmount || 0) +
+                  Number(chequeAmount || 0) -
+                  grandTotal >
+                0.01
+              }
             >
               <i className="fi fi-tr-print me-2"></i>
               Save & Print
