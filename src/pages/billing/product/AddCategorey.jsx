@@ -26,7 +26,7 @@ export const AddCategorey = () => {
   // create states
 const [hsnCode, setHsnCode] = useState("");
 const [currentPage, setCurrentPage] = useState(1);
-  const rowsPerPage = 7;
+  const rowsPerPage = 10;
 
 // edit states
 const [editHsnCode, setEditHsnCode] = useState("");
@@ -192,7 +192,7 @@ if (endPage > totalPages) {
                 </div>
                 <div className="col-md-2">
               <input
-                type="text"
+                type="number"
                 className={`form-control ${error ? "is-invalid" : ""}`}
                 placeholder="HSN Code"
                 value={hsnCode}
@@ -200,6 +200,7 @@ if (endPage > totalPages) {
                   setHsnCode(e.target.value);
                   if (error) setError("");
                 }}
+
               />
             </div>
 
@@ -268,7 +269,7 @@ if (endPage > totalPages) {
                       <td>
                         {editingId === cat.id ? (
                           <input
-                            type="text"
+                            type="number"
                             className="form-control"
                             value={editHsnCode}
                             onChange={(e) => setEditHsnCode(e.target.value)}

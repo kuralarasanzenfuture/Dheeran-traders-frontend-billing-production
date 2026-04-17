@@ -10,7 +10,7 @@ export const StockMaintanence = ({ search, refreshKey }) => {
   const [viewEntry, setViewEntry] = useState(null);
   const [editEntry, setEditEntry] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const rowsPerPage = 7;
+  const rowsPerPage = 10;
   /* ================= GROUP LOGIC ================= */
   const groupStockEntries = (rows) => {
     const grouped = Object.values(

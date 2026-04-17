@@ -9,7 +9,7 @@ import '../../assets/fonts/fonts.css'
 
 // const BASE_URL = "http://localhost:5000";
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
-const A4_BODY_HEIGHT = 250; // tune once for printer
+const A4_BODY_HEIGHT = 200; // tune once for printer
 const PAGE_HEIGHT = 1122; // A4 printable height (Chrome)
 
 export const Invoice = () => {
@@ -142,7 +142,7 @@ const calculated = products.reduce(
     const lineDiscount = discount * qty; 
   //  console.log("Line Discount:", lineDiscount);
     const lineFinalTotal = finalRate * qty;   // after discount
-
+    const total_gst_percentage = Number(p.gst_total_rate || 0);
     const cgst=Number(p.cgst_amount || 0);
     // console.log("CGST:", cgst);
     const sgst=Number(p.sgst_amount || 0);
@@ -155,6 +155,7 @@ const calculated = products.reduce(
     acc.totalQuantity += qty;
 
     //gst calculation
+    acc.total_gst_percentage += total_gst_percentage;
     acc.totalCGST += cgst;
     acc.totalSGST += sgst;
     acc.totalGST += gsttotal;
@@ -165,11 +166,13 @@ const calculated = products.reduce(
   {
     subtotal: 0,
     totalDiscount: 0,
+    total_gst_percentage: 0,
     totalQuantity: 0,
     totalAfterDiscount: 0,
     totalCGST: 0,
     totalSGST: 0,
     totalGST: 0,
+
   }
 );
 
@@ -294,10 +297,11 @@ const grandTotal = calculated.totalAfterDiscount;
           <thead>
             <tr className="text-center">
               <th width="5%">SI No</th>
-              <th width="35%">DESCRIPTION</th>
+              <th width="29%">DESCRIPTION</th>
               <th width="10%">HSN</th>
               <th width="10%">RATE</th>
               <th width="10%">Discount</th>
+              <th width="6%">GST %</th>
               <th width="6%">QTY</th>
               <th width="12%">Final Rate</th>
               
@@ -312,7 +316,7 @@ const grandTotal = calculated.totalAfterDiscount;
             {products.map((p, i) => (
               <tr key={i} data-row="product">
                 <td width="5%">{i + 1}</td>
-                <td width="35%" className="text-left">
+                <td width="29%" className="text-left">
                   {`${p.product_name} - ${p.product_brand} - ${p.product_category} - ${p.product_quantity}`}
                 </td>
                 <td width="10%">{p.hsn_code || "-"}</td>
@@ -325,6 +329,7 @@ const grandTotal = calculated.totalAfterDiscount;
                     ? `₹${Number(p.discount_amount).toFixed(2)}`
                     : "—"}
                 </td>
+                <td width="6%">{Number(p.gst_total_rate || 0).toFixed(2)} </td>
                 <td width="6%">{p.quantity}</td>
 
                  {/* FINAL RATE */}
@@ -347,6 +352,7 @@ const grandTotal = calculated.totalAfterDiscount;
                 <td></td>
                 <td></td>
                 <td></td>
+                <td></td>
               </tr>
             ))}
           </tbody>
@@ -357,8 +363,9 @@ const grandTotal = calculated.totalAfterDiscount;
           <table className="invoice-table">
             <tbody ref={footerRef} className={`footer-body ${breakFooter ? "page-break-before" : ""}`}>
               <tr>
-                <td colSpan="4" width="60%"></td>
+                <td colSpan="4" width="54%"></td>
                 <td width="10%">₹{calculated.totalDiscount.toFixed(2)}</td>
+                <td width="6%">₹{calculated.total_gst_percentage}%</td>
                 <td width="6%">{calculated.totalQuantity}</td>
                 <td width="12%">Subtotal</td>
                 <td width="12%"> ₹{calculated.totalAfterDiscount.toFixed(2)}</td>
@@ -367,7 +374,7 @@ const grandTotal = calculated.totalAfterDiscount;
               <tr>
                 {/* LEFT — DISCLAIMER */}
 
-                <td colSpan="6" rowSpan="1" style={{ width: "76%" }}>
+                <td colSpan="7" rowSpan="1" style={{ width: "76%" }}>
                   <h5 style={{ fontSize: "20px", margin: 0 }}>Disclaimer</h5>
                   <p style={{ fontWeight: 400, margin: "3px 0" }}>{company?.disclaimer}</p>
                 </td>
@@ -420,7 +427,7 @@ const grandTotal = calculated.totalAfterDiscount;
 
               <tr>
                 <td
-                  colSpan="6"
+                  colSpan="7"
                   style={{
                     color: "#a52a2a",
                     width: "76%",
@@ -436,7 +443,7 @@ const grandTotal = calculated.totalAfterDiscount;
              
 
               <tr>
-                <td colSpan="6">
+                <td colSpan="7">
                   <div style={{ display: "flex", alignItems: "center" }}>
                     <div style={{ margin: "0px 30px" }}>
                       {/* {billing.qr_code_image && <img src={`${BASE_URL}${billing.qr_code_image}`} style={{ width: "80px" }} alt="Bank QR" />} */}
@@ -474,7 +481,7 @@ const grandTotal = calculated.totalAfterDiscount;
               </tr>
 
               <tr style={{ borderTop: "2px solid #000" }}>
-                <td colSpan="8">
+                <td colSpan="9">
                   <div className="disclaimer">
                     <span>For Reg :</span>
                     {company?.company_address}, {company?.district}, {company?.state} - {company?.pincode}
@@ -487,6 +494,14 @@ const grandTotal = calculated.totalAfterDiscount;
                     <br />
                     "the system generated signature not required"
                   </div>
+                </td>
+              </tr>
+               <tr style={{ borderTop: "2px solid #000" }}>
+                <td colSpan="9">
+                 <div className="d-flex justify-content-end align-items-center gap-2 pt-4">
+                  <span>Customer Signature :</span>
+                  <span style={{width:"200px" , borderBottom:"1px dashed #000"}}></span>
+                 </div>
                 </td>
               </tr>
             </tbody>

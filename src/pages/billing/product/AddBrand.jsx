@@ -20,7 +20,7 @@ export const AddBrand = () => {
   const [error, setError] = useState("");
  
   const [currentPage, setCurrentPage] = useState(1);
-  const rowsPerPage = 7;
+  const rowsPerPage = 10;
   useEffect(() => {
     loadBrands();
   }, []);

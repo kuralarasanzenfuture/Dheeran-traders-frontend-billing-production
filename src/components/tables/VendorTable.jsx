@@ -9,7 +9,7 @@ export const VendorTable = ({
    refresh,
 }) => {
 const [currentPage, setCurrentPage] = useState(1);
-    const rowsPerPage = 8;
+    const rowsPerPage = 10;
 
   const filteredVendors = vendors.filter(v => {
     if (!search) return true;

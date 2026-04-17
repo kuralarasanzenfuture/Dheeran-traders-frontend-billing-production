@@ -22,6 +22,7 @@ export const DailySalesReport = () => {
     totalCGST: 0,
     totalSGST: 0,
     totalGST: 0,
+    totalAdvancePaid: 0,
     grandTotal: 0,
     totalReceived: 0,
     totalCash: 0,
@@ -62,6 +63,7 @@ useEffect(() => {
   let totalSGST = 0;
   let totalGST = 0;
   let grandTotal = 0;
+  let totalAdvancePaid = 0;
 
   let totalReceived = 0;
   let totalCash = 0;
@@ -87,6 +89,7 @@ useEffect(() => {
     let cgst = 0;
     let sgst = 0;
     let gst = 0;
+    
 
 bill.products?.forEach((product) => {
   cgst += Number(product.cgst_amount || 0);
@@ -100,6 +103,8 @@ bill.products?.forEach((product) => {
     totalSGST += sgst;
     totalGST += gst;
     grandTotal += gTotal;
+
+    totalAdvancePaid += Number(bill.advance_paid || 0);
 
     const billPayments = payments.filter(
       (pay) => pay.billing_id === bill.id
@@ -129,6 +134,7 @@ bill.products?.forEach((product) => {
     totalSGST,
     totalGST,
     grandTotal,
+    totalAdvancePaid,
     totalReceived,
     totalCash,
     totalUPI,
@@ -183,6 +189,7 @@ bill.products?.forEach((product) => {
       { Label: "Total CGST", Value: summary.totalCGST },
       { Label: "Total SGST", Value: summary.totalSGST },
       { Label: "Total GST", Value: summary.totalGST },
+      { Label: "Total Advance Paid", Value: summary.totalAdvancePaid },
       { Label: "Grand Total", Value: summary.grandTotal },
       {Label: "Pending bills Received Amount",Value : "--"},
       { Label: "Total Received", Value: summary.totalReceived },
@@ -274,7 +281,10 @@ bill.products?.forEach((product) => {
                 <td><b>Total GST</b></td>
                 <td className="text-end">₹ {summary.totalGST.toFixed(2)}</td>
               </tr>
-
+              <tr>
+                <td><b>Total Advance Paid Amount</b></td>
+                <td className="text-end">₹ {summary.totalAdvancePaid.toFixed(2)}</td>
+              </tr>
               <tr className="table-light">
                 <td><b>Grand Total</b></td>
                 <td className="text-end fw-bold text-primary">

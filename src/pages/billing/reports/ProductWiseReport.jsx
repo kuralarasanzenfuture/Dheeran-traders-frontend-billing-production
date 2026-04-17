@@ -15,7 +15,7 @@ export const ProductWiseReport = () => {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-   const rowsPerPage = 7;
+   const rowsPerPage = 10;
         
   /* ================= FETCH ================= */
   const fetchProductSales = async (from = "", to = "") => {

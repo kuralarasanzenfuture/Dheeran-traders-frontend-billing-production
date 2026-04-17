@@ -2,10 +2,11 @@
     import { useNavigate } from "react-router-dom";
     import * as XLSX from "xlsx";
     import { saveAs } from "file-saver";
-    import { getAllCustomerBillings ,deleteCustomerBilling  } from "../../../services/customerBilling.service";
+    import { getAllCustomerBillings ,deleteCustomerBilling ,updateCustomerBilling } from "../../../services/customerBilling.service";
     import api from "../../../services/api";
    import { createPortal } from "react-dom";
    import { toast } from "react-toastify";
+   //import XLSX from "xlsx-js-style";
  
     export const CustomerBillingReport = () => {
       const navigate = useNavigate();
@@ -20,14 +21,17 @@
       
    
       const [activeDeleteId, setActiveDeleteId] = useState(null);
+      const [activeEditId, setActiveEditId] = useState(null);
       const [password, setPassword] = useState("");
       const [deleteBoxPosition, setDeleteBoxPosition] = useState(null);
       const [unlockedDeleteId, setUnlockedDeleteId] = useState(null);
+      const [unlockedEditId, setUnlockedEditId] = useState(null);
       const [deleteError, setDeleteError] = useState("");
+      const [editError, setEditError] = useState("");
       const loggedInUser = JSON.parse(localStorage.getItem("user"));
       const isAdmin = loggedInUser?.role === "admin";
       const [currentPage, setCurrentPage] = useState(1);
-      const rowsPerPage = 7;
+      const rowsPerPage = 10;
       
       /* ================= FETCH ================= */
       useEffect(() => {
@@ -44,7 +48,7 @@
         };
         fetchBilling();
       }, []);
-  
+  console.log(rows);
  const confirmDelete = async (billingId) => {
   try {
     if (!password) {
@@ -68,7 +72,27 @@
     setUnlockedDeleteId(null);
   }
 };
+const handleEdit = (billingId) => {
+  try{
+    if(!password){
+       toast.error("Enter admin password");
+       setEditError("Enter admin password");
+       return;
+    }
+    navigate(`/product-billing/${billingId}`,{
+      state: {
+        adminPassword: password,
+      },
+    });
+    setActiveEditId(null);
+    setUnlockedEditId(null);
+    setPassword("");
 
+  }catch(err){
+    console.log(err);
+  }
+  setActiveEditId(billingId);
+};
       /* ================= FILTER ================= */
       // const filteredRows = rows.filter((r) => {
       //   const k = search.toLowerCase();
@@ -117,53 +141,221 @@ const filteredRows = useMemo(() => {
   });
 }, [rows, search, fromDate, toDate]);
 
-      /* ================= EXCEL EXPORT ================= */
-    const exportExcel = () => {
-      if (!filteredRows.length) return;
+    //   /* ================= EXCEL EXPORT ================= */
+    // const exportExcel = () => {
+    //   if (!filteredRows.length) return;
 
-      const maxProducts = Math.max(
-        ...filteredRows.map((r) => r.products?.length || 0)
-      );
+    //   const maxProducts = Math.max(
+    //     ...filteredRows.map((r) => r.products?.length || 0)
+    //   );
 
-      const data = filteredRows.map((r) => {
-        const row = {
-          Invoice: r.invoice_number,
-          Date: new Date(r.created_at).toLocaleString("en-IN"),
-          Customer: r.customer_name,
-          Phone: r.phone_number,
-          Staff: r.staff_name,
-          "Grand Total": r.grand_total,
-          Pending: r.balance_due,
-        };
+    //   const data = filteredRows.map((r) => {
+    //     const row = {
+    //       Invoice: r.invoice_number,
+    //       Date: new Date(r.created_at).toLocaleString("en-IN"),
+    //       Customer: r.customer_name,
+    //       Phone: r.phone_number,
+    //       Staff: r.staff_name,
+    //       "Grand Total": r.grand_total,
+    //       Pending: r.balance_due,
+    //     };
 
-        for (let i = 0; i < maxProducts; i++) {
-          const p = r.products?.[i];
+    //     for (let i = 0; i < maxProducts; i++) {
+    //       const p = r.products?.[i];
 
-          // 🔹 SINGLE CELL: product master details
-          row[`Product ${i + 1}`] = p
-            ? `${p.product_name} | ${p.product_brand} | ${p.product_category} | Default Qty: ${p.product_qunatity ?? "-"}`
-            : "";
+    //       // 🔹 SINGLE CELL: product master details
+    //       row[`Product ${i + 1}`] = p
+    //         ? `${p.product_name} | ${p.product_brand} | ${p.product_category} | Default Qty: ${p.product_qunatity ?? "-"}`
+    //         : "";
 
-          // 🔹 SEPARATE COLUMNS
-          row[`Product ${i + 1} Buy Qty`] = p ? p.quantity : "";
-          row[`Product ${i + 1} Rate`] = p ? p.rate : "";
-        }
+    //       // 🔹 SEPARATE COLUMNS
+    //       row[`Product ${i + 1} Buy Qty`] = p ? p.quantity : "";
+    //       row[`Product ${i + 1} Rate`] = p ? p.rate : "";
+    //     }
 
-        return row;
+    //     return row;
+    //   });
+
+    //   const ws = XLSX.utils.json_to_sheet(data);
+    //   const wb = XLSX.utils.book_new();
+    //   XLSX.utils.book_append_sheet(wb, ws, "Customer Billing Report");
+
+    //   const buffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+    //   saveAs(
+    //     new Blob([buffer], {
+    //       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    //     }),
+    //     "customer-billing-report.xlsx"
+    //   );
+    // };
+
+  const exportExcel = () => {
+  if (!filteredRows.length) return;
+
+
+  const sheetData = [];
+
+  // 🔹 HEADER
+  const headers = [
+    "S.No",
+    "Invoice Number",
+    "Customer",
+    "Place",
+    "Phone",
+    "Product Details",
+    "Qty",
+    "Rate",
+    "Amount",
+     "Total Bags",
+    "Total Amount",
+     "Advance Amount",
+    "Cash",
+    "UPI",
+    "Cheque",
+    "Pending",
+  ];
+
+  sheetData.push(headers);
+
+  let rowIndex = 1;
+  const merges = [];
+
+  filteredRows.forEach((r, index) => {
+    const startRow = rowIndex;
+const totalBags = (r.products || []).reduce(
+  (sum, p) => sum + (p.quantity || 0),
+  0
+);
+    // 🔹 CUSTOMER ROW
+    sheetData.push([
+      index + 1,
+      r.invoice_number,
+      r.customer_name,
+      r.place || "",
+      r.phone_number,
+      "",
+      "",
+      "",
+      "",
+      totalBags,
+      r.grand_total,
+      r.advance_paid || "",
+      r.cash_amount || "",
+      r.upi_amount || "",
+      r.cheque_amount || "",
+      r.balance_due,
+    ]);
+
+    rowIndex++;
+  console.log("sheetData", sheetData);
+    // 🔹 PRODUCT ROWS
+    (r.products || []).forEach((p) => {
+    sheetData.push([
+  "",
+  "   " + (p.product_name || ""),
+  "",
+  "",
+  `${p.product_name || ""} | ${p.product_brand || ""} | ${p.product_category || ""} |${p.product_quantity || ""} (${p.quantity} × ${p.rate})`,
+  p.quantity,
+  p.rate,
+  p.quantity * p.rate,
+  "",
+  "",
+  "",
+  "",
+  "",
+]);
+
+      // 🔥 MERGE Product Details columns (E to H)
+      merges.push({
+        s: { r: rowIndex, c: 4 },
+        e: { r: rowIndex, c: 7 },
       });
 
-      const ws = XLSX.utils.json_to_sheet(data);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Customer Billing Report");
+      rowIndex++;
+    });
 
-      const buffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
-      saveAs(
-        new Blob([buffer], {
-          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        }),
-        "customer-billing-report.xlsx"
-      );
+    // 🔥 MERGE CUSTOMER ROW (A-D columns)
+    merges.push({
+      s: { r: startRow, c: 0 },
+      e: { r: rowIndex - 1, c: 0 },
+    });
+    merges.push({
+      s: { r: startRow, c: 1 },
+      e: { r: rowIndex - 1, c: 1 },
+    });
+    merges.push({
+      s: { r: startRow, c: 2 },
+      e: { r: rowIndex - 1, c: 2 },
+    });
+    merges.push({
+      s: { r: startRow, c: 3 },
+      e: { r: rowIndex - 1, c: 3 },
+    });
+
+    sheetData.push([]);
+    rowIndex++;
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(sheetData);
+
+  // 🔥 APPLY MERGES
+  ws["!merges"] = merges;
+
+  // 🔹 HEADER STYLE (BOLD)
+  headers.forEach((_, col) => {
+    const cell = XLSX.utils.encode_cell({ r: 0, c: col });
+    if (ws[cell]) {
+      ws[cell].s = {
+        font: { bold: true, sz: 14 },
+        alignment: { horizontal: "center" },
+      };
+    }
+  });
+  Object.keys(ws).forEach((cellKey) => {
+  if (cellKey[0] === "!") return;
+
+  const col = cellKey.replace(/[0-9]/g, ""); // get column letter
+  const cell = ws[cellKey];
+
+  if (col === "E") {
+    cell.s = {
+      ...(cell.s || {}),
+      font: { bold: true, sz: 13 }, // optional bold
+      alignment: { wrapText: true, vertical: "center" },
+      // border: {
+      //   top: { style: "thin" },
+      //   bottom: { style: "thin" },
+      //   left: { style: "thin" },
+      //   right: { style: "thin" },
+      // },
     };
+  }
+});
+
+
+  // 🔹 COLUMN WIDTH
+  ws["!cols"] = [
+    { wch: 6 },
+    { wch: 20 },
+    { wch: 15 },
+    { wch: 15 },
+    { wch: 25 },
+    { wch: 8 },
+    { wch: 10 },
+    { wch: 12 },
+    { wch: 12 },
+    { wch: 15 },
+    { wch: 10 },
+    { wch: 10 },
+    { wch: 12 },
+  ];
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Delivery Report");
+
+  XLSX.writeFile(wb, "customer-billing-report.xlsx");
+};
     useEffect(() => {
   const closePopup = () => {
     setActiveDeleteId(null);
@@ -265,7 +457,6 @@ const filteredRows = useMemo(() => {
                 </button>     
               </div>
             </div>
-
             {/* ===== TABLE ===== */}
             <div className="common-table-wrapper mt-4">
               <table className="common-table table-striped">
@@ -281,11 +472,10 @@ const filteredRows = useMemo(() => {
                     <th className="text-end">Actions</th>
                   </tr>
                 </thead>
-
          <tbody>
   {currentRows.map((r) => (
     <React.Fragment key={r.id}>
-      {/* MAIN DATA ROW */}
+    
       <tr>
         <td>{r.id}</td>
         <td>{r.invoice_number}</td>
@@ -318,6 +508,20 @@ const filteredRows = useMemo(() => {
             >
               <i className="bi bi-printer" />
             </button>
+             {isAdmin &&(
+            <button
+              className="btn btn-sm btn-warning"
+              onClick={() => {
+                setActiveEditId(r.id);
+                setUnlockedEditId(null);
+                setPassword("");
+                setEditError(""); 
+              //  handleEdit(r.id);
+              }}
+            >
+              <i className="bi bi-pencil" />
+            </button>
+  )}
   {isAdmin &&(
             <button
               className="btn btn-sm btn-danger"
@@ -336,71 +540,80 @@ const filteredRows = useMemo(() => {
       </tr>
 
       {/* 🔐 DELETE PASSWORD ROW (VALID HTML) */}
-      {activeDeleteId === r.id && (
-        <tr>
-          <td colSpan="8">
-            <div
-              className="mx-auto mt-2 p-2 border rounded bg-white text-center"
-              style={{ width: "180px" }}
-            >
-              {/* STEP 1 */}
-              {unlockedDeleteId !== r.id && (
-                <>
-                  <div className="small text-muted mb-1">
-                    Admin Password
-                  </div>
-
-                 <input
-                    type="password"
-                    name="admin-delete-password-xyz"   // 🔴 random & unique name
-                    autoComplete="off"
-                    autoCorrect="off"
-                    autoCapitalize="off"
-                    spellCheck="false"
-                    data-lpignore="true"               // 🔴 LastPass
-                    data-form-type="other"             // 🔴 Chrome hint
-                    className="form-control form-control-sm mb-2"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-
-
-                  {deleteError && (
-                    <div className="text-danger small mb-1">
-                      {deleteError}
-                    </div>
-                  )}
-
-                  <button
-                    className="btn btn-sm btn-dark w-100"
-                    disabled={!password}
-                    onClick={() => setUnlockedDeleteId(r.id)}
-                  >
-                    🔓 Unlock
-                  </button>
-                </>
-              )}
-
-              {/* STEP 2 */}
-              {unlockedDeleteId === r.id && (
-                <>
-                  <div className="text-danger fw-semibold mb-2">
-                    Confirm delete?
-                  </div>
-                  <button
-                    className="btn btn-sm btn-danger w-100"
-                    onClick={() => confirmDelete(r.id)}
-                  >
-                    🗑 Confirm Delete
-                  </button>
-                </>
-              )}
+   {(activeDeleteId === r.id || activeEditId === r.id) && (
+  <tr>
+    <td colSpan="8">
+      <div
+        className="mx-auto mt-2 p-2 border rounded bg-white text-center"
+        style={{ width: "180px" }}
+      >
+        {/* STEP 1 */}
+        {!(unlockedDeleteId === r.id || unlockedEditId === r.id) && (
+          <>
+            <div className="small text-muted mb-1">
+              Admin Password
             </div>
-          </td>
-        </tr>
+
+            <input
+              type="password"
+              className="form-control form-control-sm mb-2"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+
+            {(deleteError || editError) && (
+              <div className="text-danger small mb-1">
+                {deleteError || editError}
+              </div>
+            )}
+
+            <button
+              className="btn btn-sm btn-dark w-100"
+              disabled={!password}
+              onClick={() => {
+                if (activeDeleteId === r.id) {
+                  setUnlockedDeleteId(r.id);
+                }
+                if (activeEditId === r.id) {
+                  setUnlockedEditId(r.id);
+                }
+              }}
+            >
+              🔓 Unlock
+            </button>
+          </>
         )}
+
+        {/* STEP 2 */}
+        {(unlockedDeleteId === r.id || unlockedEditId === r.id) && (
+          <>
+            <div className="text-danger fw-semibold mb-2">
+              {activeDeleteId === r.id
+                ? "Confirm Delete"
+                : "Confirm Edit"}
+            </div>
+
+            <button
+              className="btn btn-sm btn-danger w-100"
+              onClick={() => {
+                if (activeDeleteId === r.id) {
+                  confirmDelete(r.id);
+                }
+                if (activeEditId === r.id) {
+                  handleEdit(r.id);
+                }
+              }}
+            >
+              {activeDeleteId === r.id ? "Delete" : "Edit"}
+            </button>
+          </>
+        )}
+      </div>
+    </td>
+  </tr>
+)}
         {/* ===== EXPANDED VIEW ===== */} 
-        {openRowId === r.id && ( <tr> <td colSpan="8"> <div className="detail-card"> <table className="table table-sm table-bordered mb-0"> <thead className="table-light"> <tr> 
+        {openRowId === r.id && (<tr> <td colSpan="8"> <div className="detail-card"> <table className="table table-sm table-bordered mb-0"> <thead className="table-light"><tr> 
           
 <th className="text-center">#</th> 
 <th className="text-center">Product</th> 
@@ -410,32 +623,48 @@ const filteredRows = useMemo(() => {
 <th className="text-center">Disc ₹</th>
 <th className="text-center">Final Rate</th>
 <th className="text-center">Total</th></tr> </thead> 
-<tbody> {r.products?.length > 0 ? ( r.products.map((p, i) => ( <tr key={i}> <td className="text-center">{i + 1}</td> <td className="text-center">{p.product_name}</td> <td className="text-center">{p.quantity}</td>
+<tbody>
+  {r.products?.length > 0 ? (
+    r.products.map((p, i) => (
+      <tr key={i}>
+        <td className="text-center">{i + 1}</td>
+        <td className="text-center">{p.product_name}</td>
+        <td className="text-center">{p.quantity}</td>
 
-<td className="text-center">
-  ₹ {Number(p.rate).toFixed(2)}
-</td>
+        <td className="text-center">
+          ₹ {Number(p.rate).toFixed(2)}
+        </td>
 
-<td className="text-center text-primary">
-  {p.discount_percent ? `${p.discount_percent}%` : "—"}
-</td>
+        <td className="text-center text-primary">
+          {p.discount_percent ? `${p.discount_percent}%` : "—"}
+        </td>
 
-<td className="text-center text-danger">
-  {p.discount_amount
-    ? `₹ ${Number(p.discount_amount).toFixed(2)}`
-    : "—"}
-</td>
+        <td className="text-center text-danger">
+          {p.discount_amount
+            ? `₹ ${Number(p.discount_amount).toFixed(2)}`
+            : "—"}
+        </td>
 
-<td className="text-center fw-semibold">
-  ₹ {Number(p.final_rate || p.rate).toFixed(2)}
-</td>
+        <td className="text-center fw-semibold">
+          ₹ {Number(p.final_rate || p.rate).toFixed(2)}
+        </td>
 
-<td className="text-center fw-bold">
-  ₹ {(p.quantity * (p.final_rate || p.rate)).toFixed(2)}
-</td> </tr> )) ) : ( <tr> <td colSpan="5" className="text-center"> No products found </td> </tr> )} </tbody> </table> </div> </td> </tr> )}
-    </React.Fragment>
-  ))}
-</tbody>
+        <td className="text-center fw-bold">
+          ₹ {(p.quantity * (p.final_rate || p.rate)).toFixed(2)}
+        </td>
+      </tr>
+    ))
+  ) : (
+    <tr>
+      <td colSpan="8" className="text-center">
+        No products found
+      </td>
+    </tr>
+  )}
+</tbody> </table> </div> </td> </tr> )}
+      </React.Fragment>
+    ))}
+  </tbody>
               </table>
             </div>
 

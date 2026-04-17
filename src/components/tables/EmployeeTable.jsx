@@ -6,7 +6,7 @@ export const EmployeeTable = ({ data = [], onEdit, onDelete }) => {
   const [openRow, setOpenRow] = useState(null);
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
-  const rowsPerPage = 8;
+  const rowsPerPage = 10;
   const toggleRow = (id) => {
     setOpenRow(openRow === id ? null : id);
   };

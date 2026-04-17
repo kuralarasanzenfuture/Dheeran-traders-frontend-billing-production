@@ -12,7 +12,7 @@ export const ProductTable = ({
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const rowsPerPage = 7;
+  const rowsPerPage = 10;
  const fetchProducts = async () => {
   try {
     const data = await getProducts();

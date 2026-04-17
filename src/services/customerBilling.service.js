@@ -79,10 +79,10 @@ export const getProductWiseReportByDate = async (from, to) => {
   return Array.isArray(res.data) ? res.data : [];
 };
 
-export const updateCustomerBilling = (id, data, password) => {
+export const updateCustomerBilling = (id, data, adminPassword) => {
   return api.put(`/customer-billing/${id}`, {
     ...data,
-    password,
+    adminPassword,
   });
 };
 export const deleteCustomerBilling = (id, adminPassword) => {

@@ -17,6 +17,7 @@ export const AddStock = ({ editData = null, onSuccess, closeModal }) => {
   const [addedProducts, setAddedProducts] = useState([]);
 
   const [form, setForm] = useState({
+  //  vendor_id: "",
     vendor_name: "",
     vendor_phone: "",
     product_id: "", // ✅ ADD
@@ -78,6 +79,7 @@ export const AddStock = ({ editData = null, onSuccess, closeModal }) => {
   );
 
     setForm({
+    //  vendor_id: editData.vendor_id,
       vendor_name: editData.vendor_name,
       vendor_phone: editData.vendor_phone,
       product_name: editData.product_name,
@@ -242,6 +244,7 @@ export const AddStock = ({ editData = null, onSuccess, closeModal }) => {
         }
 
         await createVendorStock({
+      //    vendor_id:vendor.id,
           vendor_name: form.vendor_name,
           vendor_phone: form.vendor_phone,
           entry_date: form.entry_date,
@@ -258,6 +261,7 @@ export const AddStock = ({ editData = null, onSuccess, closeModal }) => {
       } else {
         /* ================= EDIT MODE ================= */
         await updateVendorStock(editData.id, {
+         // vendor_id: form.vendor.id,
           vendor_name: form.vendor_name,
           vendor_phone: form.vendor_phone,
 
@@ -280,7 +284,7 @@ export const AddStock = ({ editData = null, onSuccess, closeModal }) => {
       onSuccess?.();
       closeModal?.();
     } catch (err) {
-      toast.error(err.response?.data?.message || "Operation failed");
+      toast.error(err || "Operation failed");
     } finally {
       setLoading(false);
     }

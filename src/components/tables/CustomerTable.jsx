@@ -20,7 +20,7 @@ export const CustomerTable = ({
     );
   });
   const [currentPage, setCurrentPage] = useState(1);
-    const rowsPerPage = 8;
+    const rowsPerPage = 10;
 
  const handleDelete = async (id) => {
   if (!window.confirm("Delete this customer?")) return;

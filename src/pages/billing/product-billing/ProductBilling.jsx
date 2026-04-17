@@ -11,10 +11,10 @@ import {
   createEmployee,
 } from "../../../services/employee.service";
 import { getProducts } from "../../../services/product.service";
-import { createCustomerBilling } from "../../../services/customerBilling.service";
+import { createCustomerBilling ,updateCustomerBilling,getCustomerBillingById} from "../../../services/customerBilling.service";
 import { getAllBankDetails } from "../../../services/bankDetalis.service";
 import { getCompanyDetails } from "../../../services/companyDetails.service";
-
+import { useLocation } from "react-router-dom";
 import api from "../../../services/api";
 import { toast } from "react-toastify";
 
@@ -45,6 +45,7 @@ export const ProductBilling = () => {
   /* ================= BILL ================= */
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedProductId, setSelectedProductId] = useState("");
+  const [selectedOption, setSelectedOption] = useState(null);
 
   const [billProducts, setBillProducts] = useState([]);
   const [sellQty, setSellQty] = useState("");
@@ -75,66 +76,99 @@ export const ProductBilling = () => {
   Number(upiAmount || 0) +
   Number(chequeAmount || 0);
 
+ const location = useLocation();
+ const adminPassword = location.state?.adminPassword;
+ console.log("adminPassword:", adminPassword);
 
-  useEffect(() => {
-    if (!id) return;
+useEffect(() => {
+  if (!id || !customers.length || !employees.length || !banks.length) return;
 
-    const loadBillingForEdit = async () => {
-      try {
-        const res = await api.get(`/customer-billing/${id}`);
-        const data = res.data;
+  const loadBillingForEdit = async () => {
+    try {
+      const res = await getCustomerBillingById(id);
+      const data = res.data;
 
-        setCustomerName(data.customer_name || "");
-        setCustomerPhone(data.phone_number || "");
-        setCustomerAddress(data.address || "");
-        setSelectedCustomerId(data.customer_id || null);
+      const billing = res.billing; // ✅ IMPORTANT
 
-        setStaffName(data.staff_name || "");
-        setStaffPhone(data.staff_phone || "");
-        setSelectedEmployeeId(data.staff_id || null);
+      console.log("billing:", billing);
 
-        setSelectedBankId(Number(data.bank_id) || null);
+      // ✅ CUSTOMER
+      const customer = customers.find(
+        (c) => Number(c.id) === Number(billing.customer_id)
+      );
 
-        // setAdvancePaid(Number(data.advance_paid) || 0);
-        setCashAmount(Number(data.cash_amount) || 0);
-        setUpiAmount(Number(data.upi_amount) || 0);
-        setChequeAmount(Number(data.cheque_amount) || 0);
+      console.log("matched customer:", customer);
 
-        if (data.cheque_amount > 0) setPaymentMode("cheque");
-        else if (data.upi_amount > 0) setPaymentMode("upi");
-        else setPaymentMode("cash");
-
-        setGstNumber(data.gst_number || "");
-        setGstPercent(Number(data.tax_gst_percent) || 0);
-
-        // ✅ LOAD NEW FIELDS
-        setVehicleNumber(data.vehicle_number || "");
-        setEwayBillNumber(data.eway_bill_number || "");
-
-        setInvoicePreview(data.invoice_number);
-
-        const mappedProducts = data.products.map((p) => ({
-          product_id: p.product_id,
-          product_name: p.product_name,
-          brand: p.product_brand,
-          category: p.product_category,
-          product_quantity: p.product_quantity,
-          sell_qty: Number(p.quantity),
-          rate: Number(p.rate),
-          stock: "-",
-        }));
-
-        setBillProducts(mappedProducts);
-      } catch (err) {
-        toast.error("Failed to load billing data");
+      if (customer) {
+        setCustomerName(customer.name || "");
+        setCustomerPhone(customer.phone || "");
+        setCustomerAddress(customer.address || "");
+        setSelectedCustomerId(customer.id);
+      } else {
+        // fallback
+        setCustomerName(billing.customer_name || "");
+        setCustomerPhone(billing.phone_number || "");
       }
-    };
 
-    loadBillingForEdit();
-  }, [id]);
+      // ✅ STAFF
+      const staff = employees.find(
+  (e) => String(e.phone) === String(billing.staff_phone)
+);
+       console.log("matched staff:", staff);
+      if (staff) {
+        setStaffName(staff.name || "");
+        setStaffPhone(staff.phone || "");
+        setSelectedEmployeeId(staff.id);
+      } else {
+        setStaffName(billing.staff_name || "");
+        setStaffPhone(billing.staff_phone || "");
+        setSelectedEmployeeId(staff.id || billing.staff.id);
+      }
+
+      // ✅ BANK
+      setSelectedBankId(Number(billing.bank_id) || null);
+
+      // ✅ PAYMENT
+      setCashAmount(String(billing.cash_amount || 0));
+      setUpiAmount(String(billing.upi_amount || 0));
+      setChequeAmount(String(billing.cheque_amount || 0));
+
+      // ✅ GST
+      setCompanyGSTNumber(billing.company_gst_number || "");
+      setCustomerGSTNumber(billing.customer_gst_number || "");
+
+      setVehicleNumber(billing.vehicle_number || "");
+      setEwayBillNumber(billing.eway_bill_number || "");
+
+      setInvoicePreview(billing.invoice_number);
+
+      // ✅ PRODUCTS
+      const mappedProducts = (res.products || []).map((p) => ({
+        product_id: p.product_id,
+        product_name: p.product_name,
+        brand: p.product_brand,
+        category: p.product_category,
+        product_quantity: p.product_quantity,
+        sell_qty: Number(p.quantity),
+        rate: Number(p.rate),
+        final_rate: Number(p.final_rate || p.rate),
+        stock: "-",
+      }));
+
+      setBillProducts(mappedProducts);
+
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to load billing data");
+    }
+  };
+
+  loadBillingForEdit();
+}, [id, customers, employees, banks]);
+
 
  useEffect(() => {
-  const loadGST = async () => {
+   const loadGST = async () => {
     try {
       const res = await api.get("/customer-billing");
 
@@ -337,8 +371,11 @@ export const ProductBilling = () => {
 
     setSellQty("");
     setFinalPrice("");
+    //setSelectedProductId("");
+   // productOptions = [];
     setSelectedProduct(null);
-    setSelectedProductId("");
+   setSelectedProductId(null);
+   setSelectedOption(null); // ✅ THIS WILL CLEAR UI PERFECTLY
   };
 
   /* ================= REMOVE PRODUCT ================= */
@@ -362,6 +399,8 @@ export const ProductBilling = () => {
     const existing = customers.find(
       (c) => String(c.phone) === String(customerPhone),
     );
+
+   
 
     if (existing) {
       const existingName = (existing.name || "").trim().toLowerCase();
@@ -501,18 +540,26 @@ export const ProductBilling = () => {
       let billingId = id;
 
       if (isEdit) {
-        await api.put(`/customer-billing/${id}`, payload);
+       await updateCustomerBilling(billingId, payload,adminPassword);
+       if (!adminPassword ) {
+            toast.error("Session expired. Please enter password again.");
+            navigate("/report/customer-billing-report");
+            return;
+          } 
+       toast.success("Invoice updated successfully");
       } else {
         const res = await createCustomerBilling(payload);
         console.log("Create Billing Response:", res);
+       toast.success("Invoice saved successfully");
         billingId = res.invoice.id;
       }
-
-      toast.success("Invoice saved successfully");
       navigate(`/invoice/print/${billingId}`);
     } catch (err) {
       console.error("Billing Save Error:", err);
+      if(!err?.response?.status === 401 && !err?.response?.data?.message === "Invalid admin password"){
       toast.error("Please correct the highlighted fields.");
+      }
+      navigate("/report/customer-billing-report");
       const message = err?.response?.data?.message || err.message;
 
       // 🔥 FIELD MAPPING LOGIC
@@ -621,16 +668,28 @@ export const ProductBilling = () => {
       };
 
       if (isEdit) {
-        await api.put(`/customer-billing/${id}`, payload);
+        await updateCustomerBilling(id,payload,adminPassword);
+        if (!adminPassword ) {
+          toast.error("Session expired. Please enter password again.");
+          navigate("/report/customer-billing-report");
+          return;
+        }
+
       } else {
         await createCustomerBilling(payload);
       }
-
+      if(isEdit){
+        toast.success("Draft Updated successfully");
+        navigate("/report/customer-billing-report"); 
+      }
+      else{
       toast.success("Draft saved successfully");
-      resetBillingPage();
+      }resetBillingPage();
     } catch (err) {
       console.error("Billing Save Error:", err);
+    if(!err?.response?.status === 401 && !err?.response?.data?.message === "Invalid admin password"){
       toast.error("Please correct the highlighted fields.");
+      }
       const message = err?.response?.data?.message || err.message;
 
       // 🔥 FIELD MAPPING LOGIC
@@ -647,10 +706,50 @@ export const ProductBilling = () => {
       } else if (message.includes("Payment")) {
         setErrors((prev) => ({ ...prev, payment: message }));
       } else {
-        toast.error(message);
+         toast.error(message);
+         if( message.includes("admin password")){
+            setTimeout(() => {
+        navigate("/report/customer-billing-report");
+        }, 3000);
+         }
+      
       }
     }
   };
+  useEffect(() => {
+  // ✅ Only for CREATE mode
+  if (isEdit) return;
+
+  // ✅ Only when employees loaded
+  if (!employees.length) return;
+
+  // ✅ Only if not already selected
+  if (selectedEmployeeId) return;
+
+  const firstStaff = employees[0];
+   console.log("firstStaff:", firstStaff);
+  setStaffName(firstStaff.employee_name || "");
+  setStaffPhone(firstStaff.phone || "");
+  setSelectedEmployeeId(firstStaff.id);
+
+}, [employees]);
+
+
+useEffect(() => {
+  // ✅ Only for CREATE mode
+  if (isEdit) return;
+
+  // ✅ Wait until banks loaded
+  if (!banks.length) return;
+
+  // ✅ Don’t override if already selected
+  if (selectedBankId) return;
+
+  const firstBank = banks[0];
+
+  setSelectedBankId(firstBank.id);
+
+}, [banks]);
 
   const handleDiscard = () => {
     setCustomerName("");
@@ -818,12 +917,38 @@ const productOptions = productsList.map((p) => ({
                       <input
                         className="form-control"
                         value={customerName}
-                        onChange={(e) => {
-                          const v = e.target.value;
-                          setCustomerName(v);
-                          setSelectedCustomerId(null);
+  //                       onChange={(e) => {
+  //                         const v = e.target.value;
+  //                         setCustomerName(v);
+  //                         setSelectedCustomerId(null);
+  //                           // ❌ DO NOT reset in edit mode
+  // if (!isEdit) {
+  //   setSelectedCustomerId(null);
+  // }
+  //                         if (!v) {
+  //                           setCustomerSuggestions([]);
+  //                           return;
+  //                         }
 
-                          if (!v) {
+  //                         setCustomerSuggestions(
+  //                           customers.filter(
+  //                             (c) =>
+  //                               (c.name || "")
+  //                                 .toLowerCase()
+  //                                 .includes(v.toLowerCase()) ||
+  //                               (c.phone || "").includes(v),
+  //                           ),
+  //                         );
+  //                       }}
+  onChange={(e) => {
+  const v = e.target.value;
+  setCustomerName(v);
+
+  // ❌ DO NOT reset in edit mode
+  if (!isEdit) {
+    setSelectedCustomerId(null);
+  }
+  if (!v) {
                             setCustomerSuggestions([]);
                             return;
                           }
@@ -837,7 +962,7 @@ const productOptions = productsList.map((p) => ({
                                 (c.phone || "").includes(v),
                             ),
                           );
-                        }}
+} }
                         onFocus={() => {
                           if (customerName) {
                             setCustomerSuggestions(customers);
@@ -894,7 +1019,19 @@ const productOptions = productsList.map((p) => ({
                           } else {
                             setSelectedCustomerId(null);
                           }
+                       if (!v) {
+                            setCustomerSuggestions([]);
+                            return;
+                          }
+
+                        setCustomerSuggestions(
+                          customers.filter(
+                            (c) =>
+                              (c.phone || "").includes(v) 
+                          ),
+                        )
                         }}
+                        
                         onBlur={() =>
                           setTimeout(() => setCustomerSuggestions([]), 150)
                         }
@@ -952,12 +1089,14 @@ const productOptions = productsList.map((p) => ({
   <Select
     options={productOptions}
     placeholder="Search or Select Product"
-    value={productOptions.find(
-      (opt) => opt.value === selectedProductId
-    )}
+    // value={productOptions.find(
+    //   (opt) => opt.value === selectedProductId
+    // )}
+     value={selectedOption}
     onChange={(selected) => {
       setSelectedProductId(selected.value);
       setSelectedProduct(selected.product);
+      setSelectedOption(selected);
     }}
     isSearchable
       styles={{
@@ -1419,7 +1558,7 @@ const productOptions = productsList.map((p) => ({
                       placeholder="Cash amount"
                       min="0"
                       value={cashAmount}
-                      disabled={isEdit}
+                     // disabled={isEdit}
                    onChange={(e) => {
   const value = e.target.value;
 
@@ -1464,7 +1603,7 @@ const productOptions = productsList.map((p) => ({
                       placeholder="UPI amount"
                       min="0"
                       value={upiAmount}
-                      disabled={isEdit}
+                    //  disabled={isEdit}
                    onChange={(e) => {
   const value = e.target.value;
 
@@ -1509,7 +1648,7 @@ const productOptions = productsList.map((p) => ({
                       placeholder="Cheque amount"
                       min="0"
                       value={chequeAmount}
-                      disabled={isEdit}
+                    //  disabled={isEdit}
                     onChange={(e) => {
   const value = e.target.value;
 
