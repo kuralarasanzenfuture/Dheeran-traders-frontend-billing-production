@@ -4,7 +4,7 @@ import {
   updateProductStock,
 } from "../../../../services/product.service";
 import { toast } from "react-toastify";
-
+import * as XLSX from "xlsx";
 const Currentstock = ({
   refreshKey = 0,
   search = "",
@@ -21,7 +21,8 @@ const Currentstock = ({
   const [unlockedRowId, setUnlockedRowId] = useState(null);
    const loggedInUser = JSON.parse(localStorage.getItem("user"));
   const [searchText, setSearchText] = useState("");
-
+const [fromDate, setFromDate] = useState("");
+const [toDate, setToDate] = useState("");
   const isAdmin = loggedInUser?.role === "admin";
    const [currentPage, setCurrentPage] = useState(1);
    const rowsPerPage = 10;
@@ -89,21 +90,55 @@ const Currentstock = ({
       setUnlockedRowId(null);
     }
   };
+const getStockSnapshot = (products, selectedDateTime) => {
+  if (!selectedDateTime) return products;
 
-  /* ================= FILTER ================= */
-  const filteredProducts = products.filter((p) => {
-   const q = searchText.toLowerCase();
+  const selected = new Date(selectedDateTime);
 
-    const matchSearch =
-      p.product_name.toLowerCase().includes(q) ||
-      p.product_code.toLowerCase().includes(q) ||
-      p.brand.toLowerCase().includes(q);
+  const grouped = {};
+  const result = [];
 
-    const matchBrand = brand ? p.brand === brand : true;
-    const matchCategory = category ? p.category === category : true;
-
-    return matchSearch && matchBrand && matchCategory;
+  // group by product
+  products.forEach((p) => {
+    if (!grouped[p.id]) grouped[p.id] = [];
+    grouped[p.id].push(p);
   });
+
+  Object.values(grouped).forEach((items) => {
+    // sort by date ASC
+    items.sort(
+      (a, b) => new Date(a.updated_at) - new Date(b.updated_at)
+    );
+
+    let latest = null;
+
+    items.forEach((item) => {
+      const itemDate = new Date(item.updated_at);
+
+      if (itemDate <= selected) {
+        latest = item; // keep updating until closest
+      }
+    });
+
+    if (latest) {
+      result.push(latest);
+    }
+  });
+
+  return result;
+};
+  /* ================= FILTER ================= */
+ const snapshotProducts = getStockSnapshot(products, fromDate);
+
+const filteredProducts = snapshotProducts.filter((p) => {
+  const q = searchText.toLowerCase();
+
+  return (
+    p.product_name.toLowerCase().includes(q) ||
+    p.product_code.toLowerCase().includes(q) ||
+    p.brand.toLowerCase().includes(q)
+  );
+});
 
 const totalPages = Math.ceil(filteredProducts.length / rowsPerPage);
 
@@ -137,6 +172,84 @@ if (endPage > totalPages) {
   startPage = Math.max(1, endPage - visiblePages + 1);
 }
 
+
+
+const excelExport = () => {
+  if (!filteredProducts.length) return;
+
+  const sheetData = [];
+  const merges = [];
+
+  // ✅ Header
+  const headers = [
+    "S.No",
+    "Product Code",
+    "Product Name",
+    "Brand",
+    "Category",
+    "Stock",
+    "Price"
+  ];
+
+  sheetData.push(["CURRENT STOCK REPORT"]); // Title
+  sheetData.push([]);
+  sheetData.push(["Report Date", new Date().toLocaleDateString()]);
+  sheetData.push([]);
+  sheetData.push(headers);
+
+  let rowIndex = 5;
+
+  // ✅ Data Rows
+  filteredProducts.forEach((p, index) => {
+    sheetData.push([
+      index + 1,
+      p.product_code || "",
+      p.product_name || "",
+      p.brand || "-",
+      p.category || "-",
+      Number(p.stock ?? 0),
+      Number(p.price ?? 0),
+    ]);
+
+    rowIndex++;
+  });
+
+  // ✅ TOTAL ROW
+  const totalStock = filteredProducts.reduce(
+    (sum, p) => sum + Number(p.stock ?? 0),
+    0
+  );
+
+  sheetData.push([]);
+  sheetData.push(["", "", "", "", "Total Stock", totalStock]);
+
+  // ✅ Create Sheet
+  const ws = XLSX.utils.aoa_to_sheet(sheetData);
+
+  // ✅ Merge Title Across Columns
+  merges.push({
+    s: { r: 0, c: 0 },
+    e: { r: 0, c: 6 }
+  });
+
+  ws["!merges"] = merges;
+
+  // ✅ Column Widths (Professional)
+  ws["!cols"] = [
+    { wch: 6 },   // S.No
+    { wch: 18 },  // Product Code
+    { wch: 28 },  // Product Name
+    { wch: 20 },  // Brand
+    { wch: 20 },  // Category
+    { wch: 10 },  // Stock
+    { wch: 12 }   // Price
+  ];
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Stock Report");
+
+  XLSX.writeFile(wb, "current-stock-report.xlsx");
+};  
   if (loading) {
     return <p className="text-center">Loading products...</p>;
   }
@@ -144,18 +257,41 @@ if (endPage > totalPages) {
   return (
     
     <div className="common-table-wrapper">
-     <div className="search-box mb-3 mt-2 ps-2">
-    <input
-  type="text"
-  className="search-input"
-  placeholder="Search..."
-  value={searchText}
-  onChange={(e) => setSearchText(e.target.value)}
-/>
+      
+ <div className="search-box mb-3 mt-2 px-3 d-flex align-items-center w-100">
 
-    <i className="bi bi-search search-icon"></i>
+  {/* Search */}
+  <div className="d-flex align-items-center">
+    <input
+      type="text"
+      className="search-input"
+      placeholder="Search..."
+      value={searchText}
+      onChange={(e) => setSearchText(e.target.value)}
+      style={{ width: "250px" }}
+    />
+    <i className="bi bi-search search-icon ms-2"></i>
   </div>
 
+  {/* Date Filters */}
+  {/* <div className="d-flex align-items-center ms-3 gap-2">
+   <input
+  type="datetime-local"
+  className="form-control"
+  value={fromDate}
+  onChange={(e) => setFromDate(e.target.value)}
+/>
+    <input type="datetime-local" className="form-control" value={toDate} onChange={(e)=>setToDate(e.target.value)} />
+  </div> */}
+
+  {/* Export Button */}
+  <div className="ms-auto">
+    <button className="btn excel-btn" onClick={excelExport}>
+      Export Excel
+    </button>
+  </div>
+
+</div>
       <table className="common-table table-striped align-middle">
         <thead>
           <tr>

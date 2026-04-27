@@ -5,8 +5,13 @@ import { saveAs } from "file-saver";
 import "../../pages/billing/accounts/add-payment-model.css";
 
 import { getPendingBills } from "../../services/customerBilling.service";
-import { getPaymentsByBillingId } from "../../services/customerBillingPayment.service";
+import {
+  getPaymentsByBillingId,
+  updateCustomerPayment,
+  deleteCustomerPayment
+} from "../../services/customerBillingPayment.service";
 import { AddPayment } from "../../pages/billing/accounts/AddPayment";
+import { toast } from "react-toastify";
 
 Modal.setAppElement("#root");
 
@@ -41,7 +46,7 @@ export const PendingTable = () => {
   useEffect(() => {
     loadPending();
   }, []);
-
+console.log("Pending List:", pendingList);
   /* ================= VIEW PAYMENTS ================= */
   const toggleView = async (billingId) => {
     if (openRowId === billingId) {
@@ -60,70 +65,191 @@ export const PendingTable = () => {
   };
 
   /* ================= EXCEL EXPORT ================= */
-  const exportExcel = async () => {
-    if (!filteredList.length) return;
+//   const exportExcel = async () => {
+//     if (!filteredList.length) return;
 
-    let excelRows = [];
+//     let excelRows = [];
 
-    for (let i = 0; i < filteredList.length; i++) {
-      const row = filteredList[i]; //✅
+//     for (let i = 0; i < filteredList.length; i++) {
+//       const row = filteredList[i]; //✅
 
-      // 🔹 Load payments if not already loaded
-      let payments = paymentsMap[row.id];
-      if (!payments) {
-        const res = await getPaymentsByBillingId(row.id);
-        payments = res.data || [];
-      }
+//       // 🔹 Load payments if not already loaded
+//       let payments = paymentsMap[row.id];
+//       if (!payments) {
+//         const res = await getPaymentsByBillingId(row.id);
+//         payments = res.data || [];
+//       }
 
-      // 🔹 If no payments, still export invoice row
-      if (payments.length === 0) {
-        excelRows.push({
-          "Customer Name": row.customer_name,
-          "Mobile Number": row.phone_number,
-          "Total Amount": row.grand_total,
-          "Paid Amount": row.advance_paid,
-          "Pending Amount": row.balance_due,
-          "Payment Date & Time": "-",
-          "Cash Amount": 0,
-          "UPI Amount": 0,
-          "CHEQUE Amount": 0,
-          "Reference No": "-",
-          Remarks: "-",
-        });
-      } else {
-        // 🔹 One row per payment
-        payments.forEach((p) => {
-          excelRows.push({
-            "Customer Name": row.customer_name,
-            "Mobile Number": row.phone_number,
-            "Total Amount": row.grand_total,
-            "Paid Amount": row.advance_paid,
-            "Pending Amount": row.balance_due,
-            "Payment Date & Time": new Date(p.created_at).toLocaleString("en-IN"),
-            "Cash Amount": Number(p.cash_amount),
-            "UPI Amount": Number(p.upi_amount),
-            "CHEQUE Amount": Number(p.cheque_amount || 0),
-            "Reference No": p.reference_no || "-",
-            Remarks: p.remarks || "-",
-          });
+//       // 🔹 If no payments, still export invoice row
+//       if (payments.length === 0) {
+//         excelRows.push({
+//           "Customer Name": row.customer_name,
+//           "Mobile Number": row.phone_number,
+//           "Total Amount": Number(row.grand_total),
+//           "Paid Amount": Number(row.advance_paid),
+//           "Pending Amount":Number( row.balance_due),
+//           "Payment Date & Time": "-",
+//           "Cash Amount": 0,
+//           "UPI Amount": 0,
+//           "CHEQUE Amount": 0,
+//           "Reference No": "-",
+//           Remarks: "-",
+//         });
+//       } 
+//      else {
+//   // 🔹 Combine all payments into one string
+//   const paymentDetails = payments.map((p) => {
+//     return `Date: ${new Date(p.created_at).toLocaleString("en-IN")}
+// Cash: ${p.cash_amount || 0}
+// UPI: ${p.upi_amount || 0}
+// Cheque: ${p.cheque_amount || 0}
+// Ref: ${p.reference_no || "-"}
+// Remarks: ${p.remarks || "-"}`;
+//   }).join(" | "); // 👉 separator like product details
+
+//   excelRows.push({
+//     "Customer Name": row.customer_name,
+//     "Mobile Number": row.phone_number,
+//     "Total Amount": Number(row.grand_total),
+//     "Paid Amount": Number(row.advance_paid),
+//     "Pending Amount": Number(row.balance_due),
+
+//     // ✅ Single column for all payments
+//     "Payment Details": paymentDetails || "-",
+//   });
+// }
+//     }
+
+//     // 🔹 Create Excel
+//     const worksheet = XLSX.utils.json_to_sheet(excelRows);
+//     const workbook = XLSX.utils.book_new();
+//     XLSX.utils.book_append_sheet(workbook, worksheet, "Pending Payments Full Report");
+
+//     const buffer = XLSX.write(workbook, {
+//       bookType: "xlsx",
+//       type: "array",
+//     });
+
+//     saveAs(new Blob([buffer], { type: "application/octet-stream" }), "Pending_Payments_Full_Report.xlsx");
+//   };
+
+ 
+const exportExcel = async () => {
+  if (!filteredList.length) return;
+
+  const sheetData = [];
+  const merges = [];
+
+  const headers = [
+    "Invoice Number",
+    "Customer Name",
+    "Mobile Number",
+    "Total Amount",
+    "Paid Amount",
+    "Pending Amount",
+    "Payment Date & Time",
+    "Cash Amount",
+    "UPI Amount",
+    "CHEQUE Amount",
+    "Reference No",
+    "Remarks",
+  ];
+
+  sheetData.push(headers);
+
+  let rowIndex = 1;
+
+  for (let i = 0; i < filteredList.length; i++) {
+    const row = filteredList[i];
+
+    let payments = paymentsMap[row.id];
+    if (!payments) {
+      const res = await getPaymentsByBillingId(row.id);
+      payments = res.data || [];
+    }
+
+    const startRow = rowIndex;
+
+    // ✅ If no payments
+    if (payments.length === 0) {
+      sheetData.push([
+        row.invoice_number,
+        row.customer_name,
+        row.phone_number,
+        Number(row.grand_total),
+        Number(row.total_paid_amount) || 0,
+        Number(row.balance_due),
+        "-",
+        0,
+        0,
+        0,
+        "-",
+        "-",
+      ]);
+
+      rowIndex++;
+    } else {
+      // ✅ First payment row (with invoice details)
+      payments.forEach((p, index) => {
+        sheetData.push([
+          index === 0 ? row.invoice_number : "",
+          index === 0 ? row.customer_name : "",
+          index === 0 ? row.phone_number : "",
+          index === 0 ? Number(row.grand_total) : "",
+          index === 0 ? Number(row.total_paid_amount) || 0 : "",
+          index === 0 ? Number(row.balance_due) : "",
+
+          new Date(p.created_at).toLocaleString("en-IN"),
+          Number(p.cash_amount || 0),
+          Number(p.upi_amount || 0),
+          Number(p.cheque_amount || 0),
+          p.reference_no || "-",
+          p.remarks || "-",
+        ]);
+
+        rowIndex++;
+      });
+
+      // ✅ Merge ONLY invoice columns (like product report)
+      for (let col = 0; col <= 5; col++) {
+        merges.push({
+          s: { r: startRow, c: col },
+          e: { r: rowIndex - 1, c: col },
         });
       }
     }
 
-    // 🔹 Create Excel
-    const worksheet = XLSX.utils.json_to_sheet(excelRows);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Pending Payments Full Report");
+    // space row
+    sheetData.push([]);
+    rowIndex++;
+  }
 
-    const buffer = XLSX.write(workbook, {
-      bookType: "xlsx",
-      type: "array",
-    });
+  const ws = XLSX.utils.aoa_to_sheet(sheetData);
+  ws["!merges"] = merges;
 
-    saveAs(new Blob([buffer], { type: "application/octet-stream" }), "Pending_Payments_Full_Report.xlsx");
-  };
+  // ✅ Column width
+  ws["!cols"] = [
+    { wch: 18 },
+    { wch: 20 },
+    { wch: 15 },
+    { wch: 14 },
+    { wch: 14 },
+    { wch: 14 },
+    { wch: 22 },
+    { wch: 12 },
+    { wch: 12 },
+    { wch: 14 },
+    { wch: 18 },
+    { wch: 25 },
+  ];
 
-  const filteredList = useMemo(() => {
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Pending Payments");
+
+  XLSX.writeFile(wb, "Pending_Payments_Report.xlsx");
+};
+
+const filteredList = useMemo(() => {
     const k = (searchTerm || "").trim().toLowerCase();
 
     return pendingList.filter((row) => {
@@ -165,6 +291,58 @@ export const PendingTable = () => {
     endPage = totalPages;
     startPage = Math.max(1, endPage - visiblePages + 1);
   }
+
+  
+const handleEditPayment = async (p) => {
+  const newCash = prompt("Enter Cash Amount", p.cash_amount);
+  const newUpi = prompt("Enter UPI Amount", p.upi_amount);
+
+  if (newCash === null && newUpi === null) return;
+
+  try {
+    await updateCustomerPayment(p.id, {
+      cash_amount: Number(newCash) || 0,
+      upi_amount: Number(newUpi) || 0,
+      cheque_amount: Number(p.cheque_amount || 0),
+      reference_no: p.reference_no,
+      remarks: p.remarks,
+    });
+
+    alert("Updated successfully");
+
+    const res = await getPaymentsByBillingId(p.billing_id);
+
+    setPaymentsMap((prev) => ({
+      ...prev,
+      [p.billing_id]: res.data || [],
+    }));
+
+    await loadPending();
+
+  } catch (err) {
+    alert("Update failed");
+  }
+};
+const handleDeletePayment = async (paymentId, billingId) => {
+  if (!window.confirm("Are you sure to delete this payment?")) return;
+
+  try {
+    await deleteCustomerPayment(paymentId);
+
+    // reload payments
+    const res = await getPaymentsByBillingId(billingId);
+
+    setPaymentsMap((prev) => ({
+      ...prev,
+      [billingId]: res.data || [],
+    }));
+
+    await loadPending();
+toast.success("Payment deleted successfully");
+  } catch (err) {
+    alert("Delete failed");
+  }
+};
 
   if (loading) {
     return <p className="text-center py-3">Loading pending payments...</p>;
@@ -234,13 +412,14 @@ export const PendingTable = () => {
         <button className="btn excel-btn" onClick={exportExcel}>
           <i class="fi fi-tr-file-excel"></i> Export Excel
         </button>
-      </div>
+      </div>  
 
       {/* ===== TABLE ===== */}
       <div className="common-table-wrapper">
         <table className="common-table table-striped">
           <thead>
             <tr>
+              <th>Invoice Number</th>
               <th>Customer Name</th>
               <th className="text-center">Mobile</th>
               <th className="text-center">Total</th>
@@ -262,10 +441,11 @@ export const PendingTable = () => {
               currentRows.map((row) => (
                 <React.Fragment key={row.id}>
                   <tr>
+                    <td className="">{row.invoice_number}</td>
                     <td className="">{row.customer_name}</td>
                     <td className="text-center">{row.phone_number}</td>
                     <td className="text-center">₹{row.grand_total.toFixed(2)}</td>
-                    <td className="text-center">₹{row.advance_paid.toFixed(2)}</td>
+                    <td className="text-center">₹{Number(row.total_paid_amount).toFixed(2) || "0.00"}</td>
                     <td className="text-center text-danger fw-bold">₹{row.balance_due.toFixed(2)}</td>
                     <td className="text-end">
                       <div className="action-icon-group">
@@ -282,13 +462,27 @@ export const PendingTable = () => {
                         <button className="action-icon-btn action-view" title="View Payments" onClick={() => toggleView(row.id)}>
                           <i className="bi bi-file-earmark-text"></i>
                         </button>
+
+                                {/* <button
+                                  className="btn btn-sm btn-warning "
+                                  onClick={() => onEdit?.(c)}
+                                >
+                                  <i className="bi bi-pencil" />
+                                </button>
+                                              <button
+                                              className="btn btn-sm btn-danger "
+                                              onClick={() => onDelete?.(c)}
+                                            >
+                                              <i className="bi bi-trash" />
+                                            </button> */}
+
                       </div>
                     </td>
                   </tr>
 
                   {/* ===== PAYMENT HISTORY ===== */}
                   {openRowId === row.id && (
-                    <tr>
+                    <tr className="align-items-center">
                       <td colSpan="6">
                         <table className="table table-bordered mb-0">
                           <thead>
@@ -299,27 +493,37 @@ export const PendingTable = () => {
                               <th>Cheque</th>
                               <th>Reference</th>
                               <th>Remarks</th>
+                              <th className="text-center">Action</th>
                             </tr>
                           </thead>
                           <tbody>
-                            {paymentsMap[row.id]?.length ? (
-                              paymentsMap[row.id].map((p) => (
-                                <tr key={p.id}>
-                                  <td>{new Date(p.created_at).toLocaleString("en-IN")}</td>
-                                  <td>₹{Number(p.cash_amount).toFixed(2)}</td>
-                                  <td>₹{Number(p.upi_amount).toFixed(2)}</td>
-                                  <td>₹{Number(p.cheque_amount || 0).toFixed(2)}</td>
-                                  <td>{p.reference_no || "-"}</td>
-                                  <td>{p.remarks || "-"}</td>
-                                </tr>
-                              ))
-                            ) : (
-                              <tr>
-                                <td colSpan="5" className="text-center">
-                                  No payments found
-                                </td>
-                              </tr>
-                            )}
+                            {paymentsMap[row.id]?.map((p) => (
+  <tr key={p.id}>
+    <td>{new Date(p.created_at).toLocaleString("en-IN")}</td>
+    <td>₹{Number(p.cash_amount).toFixed(2)}</td>
+    <td>₹{Number(p.upi_amount).toFixed(2)}</td>
+    <td>₹{Number(p.cheque_amount || 0).toFixed(2)}</td>
+    <td>{p.reference_no || "-"}</td>
+    <td>{p.remarks || "-"}</td>
+
+    {/* ✅ ACTION COLUMN */}
+    <td className="text-center">
+      {/* <button
+        className="btn btn-sm btn-warning me-2"
+        onClick={() => handleEditPayment(p)}
+      >
+        <i className="bi bi-pencil"></i>
+      </button> */}
+
+      <button
+        className="btn btn-sm btn-danger"
+        onClick={() => handleDeletePayment(p.id, row.id)}
+      >
+        <i className="bi bi-trash"></i>
+      </button>
+    </td>
+  </tr>
+))}
                           </tbody>
                         </table>
                       </td>

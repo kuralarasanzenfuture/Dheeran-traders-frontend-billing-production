@@ -208,6 +208,15 @@ export const Sidebar = () => {
                           <span className="submenu_text">Current Stock</span>
                         </Link>
                       </li>
+
+                         <li className={isActive("/accounts/returnproduct-list", location.pathname) ? "active" : ""}>
+                      <Link to="/accounts/returnproduct-list">
+                        <span className="submenu_icon">
+                            <i className="fi fi-rr-inbox"></i>
+                        </span>
+                        <span className="submenu_text">Return Product List</span>
+                      </Link>
+                    </li>
                   </ul>
                 )}
               </li>

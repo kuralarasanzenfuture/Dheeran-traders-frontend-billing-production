@@ -19,6 +19,8 @@ import { ProductList } from "./pages/billing/product/ProductList";
 import { StockMaintanence } from "./pages/billing/accounts/stocks/StockMaintanence";
 import { AddStock } from "./pages/billing/accounts/stocks/AddStock";
 import { StockList } from "./pages/billing/accounts/stocks/StockList";
+import {AddReturnProduct} from "./pages/billing/accounts/Addreturnproduct";
+import {ReturnproductList} from "./pages/billing/accounts/ReturnproductList";
 import { PendingPaymentList } from "./pages/billing/accounts/PendingPaymentList";
 import Currentstock from "./pages/billing/accounts/stocks/Currentstock";
 
@@ -45,6 +47,7 @@ import { BankDetails } from "./pages/settings/BankDetails";
 import { BankDetailsList } from "./pages/settings/BankDetailsList";
 import { AddBankDetails } from "./pages/settings/AddBankDetails";
 import { AddPayment } from "./pages/billing/accounts/AddPayment";
+import Companygstnumber from "./pages/settings/Companygstnumber";
 import CompanyDetails from "./pages/settings/CompanyDetails";
 import CreateProfile from "./pages/settings/CreateProfile";
 import { CustomerBillingReport } from "./pages/billing/reports/CustomerBillingReport";
@@ -91,7 +94,9 @@ const DashboardLayout = () => (
           <Route path="/accounts" element={<AccountsLayout />}>
             <Route path="pending-list" element={<PendingPaymentList />} />
             <Route path="add-payment/:id" element={<AddPayment />} />
-
+ <Route path="add-returnproduct" element={<AddReturnProduct />} />
+            <Route path="returnproduct-list" element={<ReturnproductList />} />
+            <Route path="returnproduct-list/:invoiceId" element={<ReturnproductList />} />
             <Route path="stock-maintanence" element={<StockMaintanence />}>
               <Route index element={<StockList />} />
               <Route path="add-stock" element={<AddStock />} />
@@ -116,9 +121,10 @@ const DashboardLayout = () => (
               <Route index element={<BankDetailsList />} />
               <Route path="add-bank" element={<AddBankDetails />} />
               <Route path="edit-bank/:id" element={<AddBankDetails />} />
+
             </Route>
             <Route path="create-profile" element={<CreateProfile />} />
-
+              <Route path="company-gst-number" element={<Companygstnumber />} />
             <Route path="company-details" element={<CompanyDetails />} />
           </Route>
           <Route path="notifications" element={<Notifications />} />

@@ -170,7 +170,7 @@ bill.products?.forEach((product) => {
       return {
         "S.No": index + 1,
        "Invoice No": bill.invoice_number || "-",
-        Date: new Date(bill.created_at).toLocaleDateString(),
+      Date: new Date(bill.created_at),
         "Sub Total": bill.subtotal || 0,
         CGST: bill.cgst_amount || 0,
         SGST: bill.sgst_amount || 0,
@@ -200,9 +200,52 @@ bill.products?.forEach((product) => {
 
     const wb = XLSX.utils.book_new();
 
-    const wsSummary = XLSX.utils.json_to_sheet(summaryData);
-    const wsInvoices = XLSX.utils.json_to_sheet(invoiceData);
+    const formatDate = (date) => {
+  if (!date) return "";
+  return new Date(date).toLocaleDateString("en-GB");
+};
 
+const wsSummary = XLSX.utils.aoa_to_sheet([
+  [
+    `From Date: ${formatDate(fromDate)}`,
+    `To Date: ${formatDate(toDate)}`
+  ],
+  [],
+]);
+// wsSummary["!merges"] = [
+//   {
+//     s: { r: 0, c: 0 },
+//     e: { r: 0, c: 1 },
+//   },
+//   {
+//     s: { r: 0, c: 2 },
+//     e: { r: 0, c: 3 },
+//   },
+// ];
+
+
+wsSummary["!cols"] = [
+  { wch: 25 },
+  { wch: 25 },
+];
+XLSX.utils.sheet_add_json(wsSummary, summaryData, { origin: "A3" });
+const autoWidth = (data) => {
+  const colWidths = [];
+
+  data.forEach((row) => {
+    Object.keys(row).forEach((key, i) => {
+      const value = row[key] ? row[key].toString() : "";
+      colWidths[i] = Math.max(colWidths[i] || 10, value.length + 2);
+    });
+  });
+
+  return colWidths.map((w) => ({ wch: w }));
+
+};
+  const wsInvoices = XLSX.utils.json_to_sheet(invoiceData);
+  wsSummary["!cols"] = autoWidth(summaryData);
+   wsInvoices["!cols"] = autoWidth(invoiceData);
+  
     XLSX.utils.book_append_sheet(wb, wsSummary, "Summary");
     XLSX.utils.book_append_sheet(wb, wsInvoices, "Invoices");
 

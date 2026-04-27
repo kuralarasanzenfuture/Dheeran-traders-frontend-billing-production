@@ -35,7 +35,7 @@ export const ProductWiseReport = () => {
       setLoading(false);
     }
   };
-
+console.log(rows);
   useEffect(() => {
     // No dates → normal fetch
     if (!fromDate && !toDate) {
@@ -71,14 +71,36 @@ export const ProductWiseReport = () => {
   /* ================= EXCEL EXPORT ================= */
   const exportExcel = () => {
     const excelData = filteredRows.map((item) => ({
+      S_No: filteredRows.indexOf(item) + 1,
+      Date: new Date(item.created_at),
       Product: item.product_name,
       Brand: item.product_brand,
       Category: item.product_category,
       Unit: item.product_quantity,
-      "Total Sold": item.total_quantity_sold,
+      "Total Sold":Number(item.total_quantity_sold),
     }));
 
-    const worksheet = XLSX.utils.json_to_sheet(excelData);
+   const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+// ✅ Set column widths
+worksheet["!cols"] = [
+  { wch: 6 },
+  { wch: 22 }, // Date bigger
+  { wch: 15 },
+  { wch: 15 },
+  { wch: 15 },
+  { wch: 10 },
+  { wch: 15 },
+];
+
+// ✅ Format date column
+const range = XLSX.utils.decode_range(worksheet["!ref"]);
+for (let row = 1; row <= range.e.r; row++) {
+  const cell = XLSX.utils.encode_cell({ r: row, c: 1 });
+  if (worksheet[cell]) {
+    worksheet[cell].z = "dd/mm/yyyy hh:mm AM/PM";
+  }
+}
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Product Wise Report");
 

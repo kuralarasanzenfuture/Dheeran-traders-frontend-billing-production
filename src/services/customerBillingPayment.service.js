@@ -18,3 +18,21 @@ export const getAllPayments = async () => {
   const res = await api.get("/customer-payments");
   return res.data;
 };
+
+export const updateCustomerPayment = async (id, data) => {
+  try {
+    return await api.put(`/customer-payments/${id}`, data);
+  } catch (error) {
+    console.error("Error updating customer payment:", error);
+    throw error;
+  }
+};
+
+export const deleteCustomerPayment = async (id) => {
+  try {
+    return await api.delete(`/customer-payments/${id}`);
+  } catch (error) {
+    console.error("Error deleting customer payment:", error);
+    throw error;
+  }
+};

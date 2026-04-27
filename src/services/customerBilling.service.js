@@ -93,3 +93,14 @@ export const deleteCustomerBilling = (id, adminPassword) => {
   });
 };
 
+
+
+export const nextInvoiceNumber = async () => {
+  try {
+  const res = await api.get("/customer-billing/next-invoice-number");
+  return res.data;
+ } catch (error) {
+  console.error("Get Next Invoice Number Error:", error.response?.data || error.message);
+  throw error;
+ }
+};

@@ -13,6 +13,7 @@ export const AddBankDetails = () => {
     branch: "",
     ifsc_code: "",
     status: "active",
+    is_primary: false,
     qr_image: null,
   });
 
@@ -24,14 +25,15 @@ export const AddBankDetails = () => {
       try {
         const res = await getBankDetailsById(id);
         const data = res?.data;
-
+        
         setFormData({
           account_name: data?.account_name || "",
           bank_name: data?.bank_name || "",
           account_number: data?.account_number || "",
           branch: data?.branch || "",
           ifsc_code: data?.ifsc_code || "",
-          status: data?.status || "active",
+          status: data?.status === 1 ? "active" : "inactive",
+          is_primary: data?.is_primary === 1 || data?.is_primary === true ? true : false,
           qr_image: null, // file must be re-selected
         });
       } catch (error) {
@@ -45,14 +47,19 @@ export const AddBankDetails = () => {
 
   /* ================= HANDLERS ================= */
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+  const { name, value, type, checked } = e.target;
+
+  setFormData((prev) => ({
+    ...prev,
+    [name]: type === "checkbox" ? checked : value,
+  }));
+};
 
   const handleFileChange = (e) => {
     setFormData((prev) => ({
       ...prev,
       qr_image: e.target.files[0],
+    
     }));
   };
 
@@ -75,11 +82,18 @@ export const AddBankDetails = () => {
     try {
       const data = new FormData();
 
-      Object.entries(formData).forEach(([key, value]) => {
-        if (key !== "qr_image") {
-          data.append(key, value);
-        }
-      });
+  Object.entries(formData).forEach(([key, value]) => {
+  if (key !== "qr_image") {
+    if (key === "is_primary") {
+      data.append(key, value ? 1 : 0);
+      console.log("Appending is_primary:", value ? 1 : 0);
+    } else if (key === "status") {
+      data.append(key, value); // ✅ string
+    } else {
+      data.append(key, value);
+    }
+  }
+});
 
       if (formData.qr_image) {
         data.append("qr_code_image", formData.qr_image);
@@ -176,7 +190,18 @@ export const AddBankDetails = () => {
                   <option value="inactive">Inactive</option>
                 </select>
               </div>
-
+                 <div className="col-md-8 text-end d-flex align-items-end">
+                      <label>
+                        <input
+                          type="checkbox"
+                          className="color-danger"
+                          name="is_primary"
+                          checked={formData.is_primary}
+                          onChange={handleChange}
+                        />{" "}
+                        Set as Primary
+                      </label>
+                    </div>
               {/* SUBMIT */}
               <div className="col-md-12 text-end">
                 <button type="submit" className="btn main-btn">

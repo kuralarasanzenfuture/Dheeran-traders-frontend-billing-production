@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import "./product-billing.css";
 import { useNavigate, useParams } from "react-router-dom";
 import Select from "react-select";
@@ -11,9 +11,10 @@ import {
   createEmployee,
 } from "../../../services/employee.service";
 import { getProducts } from "../../../services/product.service";
-import { createCustomerBilling ,updateCustomerBilling,getCustomerBillingById} from "../../../services/customerBilling.service";
+import { createCustomerBilling ,updateCustomerBilling,getCustomerBillingById,nextInvoiceNumber} from "../../../services/customerBilling.service";
 import { getAllBankDetails } from "../../../services/bankDetalis.service";
 import { getCompanyDetails } from "../../../services/companyDetails.service";
+import { getAllGST } from "../../../services/companygstnumber";
 import { useLocation } from "react-router-dom";
 import api from "../../../services/api";
 import { toast } from "react-toastify";
@@ -167,30 +168,52 @@ useEffect(() => {
 }, [id, customers, employees, banks]);
 
 
- useEffect(() => {
-   const loadGST = async () => {
+//  useEffect(() => {
+//    const loadGST = async () => {
+//     try {
+//       const res = await api.get("/customer-billing");
+
+//       console.log("API DATA:", res.data);
+
+//       const gstList = (res.data || [])
+//         .map((b) => b.company_gst_number)
+//         .filter((g) => g && g.trim() !== ""); // 🔥 strong filter
+
+//       const uniqueGST = [...new Set(gstList)];
+
+//       setAllGSTNumbers(uniqueGST);
+//       setGstLoaded(true);   // ✅ mark loaded
+
+//       console.log("GST LIST:", uniqueGST);
+//     } catch (err) {
+//       console.error("GST fetch error", err);
+//       setGstLoaded(true);
+//     }
+//   };
+
+//   loadGST();
+// }, []);
+
+
+useEffect(() => {
+  const loadCompanyGST = async () => {
     try {
-      const res = await api.get("/customer-billing");
+      const res = await getAllGST();
 
-      console.log("API DATA:", res.data);
+      const gstList = res.data || res; // handle both cases
 
-      const gstList = (res.data || [])
-        .map((b) => b.company_gst_number)
-        .filter((g) => g && g.trim() !== ""); // 🔥 strong filter
+      const defaultGST = gstList.find(g => g.is_default === 1);
 
-      const uniqueGST = [...new Set(gstList)];
+      if (defaultGST) {
+        setCompanyGSTNumber(defaultGST.gst_number);
+      }
 
-      setAllGSTNumbers(uniqueGST);
-      setGstLoaded(true);   // ✅ mark loaded
-
-      console.log("GST LIST:", uniqueGST);
-    } catch (err) {
-      console.error("GST fetch error", err);
-      setGstLoaded(true);
+    } catch (error) {
+      console.error("Get All GST Error:", error.response?.data || error.message);
     }
   };
 
-  loadGST();
+  loadCompanyGST();
 }, []);
   /* ================= LOAD DATA ================= */
   useEffect(() => {
@@ -250,22 +273,38 @@ useEffect(() => {
 
     const loadInvoiceNumber = async () => {
       try {
-        const res = await api.get("/customer-billing/next-invoice-number");
-
-        setInvoicePreview(res.data.nextInvoiceNumber || "INV-NEW");
+        const res = await nextInvoiceNumber();
+        console.log("Next Invoice API Response:", res);
+        setInvoicePreview(res.nextInvoiceNumber || "INV-NEW");
+        setStaffName(res.staffName || "");
+        setStaffPhone(res.staffPhone || "");
+        const macthedStaff = employees.find(
+          (e) =>
+            e.employee_name === res.staffName && e.phone === res.staffPhone
+        );
+        if(macthedStaff){
+          setSelectedEmployeeId(macthedStaff.id);
+        }
+        
       } catch (err) {
         console.error("Invoice API error:", err);
       }
     };
 
     loadInvoiceNumber();
-  }, [isEdit]);
+  }, [isEdit, employees]);
 
   useEffect(() => {
     const loadBanks = async () => {
       try {
         const res = await getAllBankDetails();
-        setBanks(res.data || []);
+        const banksData = res.data || res; // handle both cases
+        const primaryBank = banksData.find((b) => b.is_primary === 1 || b.is_primary === true);
+        if(primaryBank){
+          setBanks([primaryBank]);
+        }
+        console.log("Banks API Response:", banksData);
+        //setBanks(res.data || []);
       } catch (err) {
         console.error("Failed to load banks", err);
       }
@@ -273,6 +312,7 @@ useEffect(() => {
 
     loadBanks();
   }, []);
+  console.log(banks);
 
   const subtotal = billProducts.reduce(
     (sum, p) => sum + p.sell_qty * (p.final_rate || p.rate),
@@ -728,9 +768,9 @@ useEffect(() => {
 
   const firstStaff = employees[0];
    console.log("firstStaff:", firstStaff);
-  setStaffName(firstStaff.employee_name || "");
-  setStaffPhone(firstStaff.phone || "");
-  setSelectedEmployeeId(firstStaff.id);
+ // setStaffName(firstStaff.employee_name || "");
+  //setStaffPhone(firstStaff.phone || "");
+ // setSelectedEmployeeId(firstStaff.id);
 
 }, [employees]);
 
@@ -1286,7 +1326,9 @@ const productOptions = productsList.map((p) => ({
                       setGstSuggestions(filtered);
                     }}
                     onBlur={() => setTimeout(() => setGstSuggestions([]), 200)}
-                  />
+                
+                  readOnly
+                />
 
                   {gstSuggestions.length > 0 && (
                    <ul className="list-group position-absolute w-100 shadow bg-white z-3 gst-suggestion-list">

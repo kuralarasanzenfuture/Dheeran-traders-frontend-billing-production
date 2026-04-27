@@ -15,6 +15,8 @@ export const Settings = () => {
 
         <NavLink to="bank-details">Bank Details</NavLink>
 
+        <NavLink to="company-gst-number">Company GST</NavLink>
+
         {isAdmin && (
           <NavLink to="create-profile">Create Profile</NavLink>
         )}

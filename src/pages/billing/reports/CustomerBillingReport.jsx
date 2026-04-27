@@ -4,6 +4,7 @@
     import { saveAs } from "file-saver";
     import { getAllCustomerBillings ,deleteCustomerBilling ,updateCustomerBilling } from "../../../services/customerBilling.service";
     import api from "../../../services/api";
+    import { getAllReturns } from "../../../services/productretrun.service";
    import { createPortal } from "react-dom";
    import { toast } from "react-toastify";
    //import XLSX from "xlsx-js-style";
@@ -28,6 +29,7 @@
       const [unlockedEditId, setUnlockedEditId] = useState(null);
       const [deleteError, setDeleteError] = useState("");
       const [editError, setEditError] = useState("");
+      const [returnDetails, setReturnDetails] = useState({});
       const loggedInUser = JSON.parse(localStorage.getItem("user"));
       const isAdmin = loggedInUser?.role === "admin";
       const [currentPage, setCurrentPage] = useState(1);
@@ -48,7 +50,7 @@
         };
         fetchBilling();
       }, []);
-  console.log(rows);
+  console.log("Customer Billings:", rows);
  const confirmDelete = async (billingId) => {
   try {
     if (!password) {
@@ -93,6 +95,24 @@ const handleEdit = (billingId) => {
   }
   setActiveEditId(billingId);
 };
+
+
+const loadReturnDetails = async () => {
+  try {
+    const data = await getAllReturns();
+    setReturnDetails(data)
+     console.log("Fetched return details:", data);
+    return data;
+  } catch (err) {
+    console.error("Failed to fetch return data", err);
+    return null;
+  }
+};
+useEffect(() => {
+  loadReturnDetails();
+}, []);
+console.log("Return Details:", returnDetails);
+
       /* ================= FILTER ================= */
       // const filteredRows = rows.filter((r) => {
       //   const k = search.toLowerCase();
@@ -142,7 +162,7 @@ const filteredRows = useMemo(() => {
 }, [rows, search, fromDate, toDate]);
 
     //   /* ================= EXCEL EXPORT ================= */
-    // const exportExcel = () => {
+    // const excelExport = () => {
     //   if (!filteredRows.length) return;
 
     //   const maxProducts = Math.max(
@@ -189,109 +209,288 @@ const filteredRows = useMemo(() => {
     //   );
     // };
 
-  const exportExcel = () => {
-  if (!filteredRows.length) return;
+//   const excelExport = () => {
+//   if (!filteredRows.length) return;
 
+
+//   const sheetData = [];
+
+//   // 🔹 HEADER
+//   const headers = [
+//     "S.No",
+//     "Invoice Number",
+//     "Customer",
+//     "Place",
+//     "Phone",
+//     "Product Details",
+//     "Qty",
+//     "Rate",
+//     "Amount",
+//      "Total Bags",
+//     "Total Amount",
+//      "Advance Amount",
+//     "Cash",
+//     "UPI",
+//     "Cheque",
+//     "Pending",
+//   ];
+
+//   sheetData.push(headers);
+
+//   let rowIndex = 1;
+//   const merges = [];
+
+//   filteredRows.forEach((r, index) => {
+//     const startRow = rowIndex;
+// const totalBags = (r.products || []).reduce(
+//   (sum, p) => sum + (p.quantity || 0),
+//   0
+// );
+//     // 🔹 CUSTOMER ROW
+//     sheetData.push([
+//       index + 1,
+//       r.invoice_number,
+//       r.customer_name,
+//       r.place || "",
+//       r.phone_number,
+//       "",
+//       "",
+//       "",
+//       "",
+//       totalBags,
+//       r.grand_total,
+//       r.advance_paid || "",
+//       r.cash_amount || "",
+//       r.upi_amount || "",
+//       r.cheque_amount || "",
+//       r.balance_due,
+//     ]);
+
+//     rowIndex++;
+//   console.log("sheetData", sheetData);
+//     // 🔹 PRODUCT ROWS
+//     (r.products || []).forEach((p) => {
+//     sheetData.push([
+//   "",
+//   "   " + (p.product_name || ""),
+//   "",
+//   "",
+//   `${p.product_name || ""} | ${p.product_brand || ""} | ${p.product_category || ""} |${p.product_quantity || ""} (${p.quantity} × ${p.rate})`,
+//   p.quantity,
+//   p.rate,
+//   p.quantity * p.rate,
+//   "",
+//   "",
+//   "",
+//   "",
+//   "",
+// ]);
+
+//       // 🔥 MERGE Product Details columns (E to H)
+//       merges.push({
+//         s: { r: rowIndex, c: 4 },
+//         e: { r: rowIndex, c: 7 },
+//       });
+
+//       rowIndex++;
+//     });
+
+//     // 🔥 MERGE CUSTOMER ROW (A-D columns)
+//     merges.push({
+//       s: { r: startRow, c: 0 },
+//       e: { r: rowIndex - 1, c: 0 },
+//     });
+//     merges.push({
+//       s: { r: startRow, c: 1 },
+//       e: { r: rowIndex - 1, c: 1 },
+//     });
+//     merges.push({
+//       s: { r: startRow, c: 2 },
+//       e: { r: rowIndex - 1, c: 2 },
+//     });
+//     merges.push({
+//       s: { r: startRow, c: 3 },
+//       e: { r: rowIndex - 1, c: 3 },
+//     });
+
+//     sheetData.push([]);
+//     rowIndex++;
+//   });
+
+//   const ws = XLSX.utils.aoa_to_sheet(sheetData);
+
+//   // 🔥 APPLY MERGES
+//   ws["!merges"] = merges;
+
+//   // 🔹 HEADER STYLE (BOLD)
+//   headers.forEach((_, col) => {
+//     const cell = XLSX.utils.encode_cell({ r: 0, c: col });
+//     if (ws[cell]) {
+//       ws[cell].s = {
+//         font: { bold: true, sz: 14 },
+//         alignment: { horizontal: "center" },
+//       };
+//     }
+//   });
+//   Object.keys(ws).forEach((cellKey) => {
+//   if (cellKey[0] === "!") return;
+
+//   const col = cellKey.replace(/[0-9]/g, ""); // get column letter
+//   const cell = ws[cellKey];
+
+//   if (col === "E") {
+//     cell.s = {
+//       ...(cell.s || {}),
+//       font: { bold: true, sz: 13 }, // optional bold
+//       alignment: { wrapText: true, vertical: "center" },
+//       // border: {
+//       //   top: { style: "thin" },
+//       //   bottom: { style: "thin" },
+//       //   left: { style: "thin" },
+//       //   right: { style: "thin" },
+//       // },
+//     };
+//   }
+// });
+
+
+//   // 🔹 COLUMN WIDTH
+//   ws["!cols"] = [
+//     { wch: 6 },
+//     { wch: 20 },
+//     { wch: 15 },
+//     { wch: 15 },
+//     { wch: 25 },
+//     { wch: 8 },
+//     { wch: 10 },
+//     { wch: 12 },
+//     { wch: 12 },
+//     { wch: 15 },
+//     { wch: 10 },
+//     { wch: 10 },
+//     { wch: 12 },
+//   ];
+
+//   const wb = XLSX.utils.book_new();
+//   XLSX.utils.book_append_sheet(wb, ws, "Delivery Report");
+
+//   XLSX.writeFile(wb, "customer-billing-report.xlsx");
+// };
+  
+const excelExport = () => {
+  if (!filteredRows.length) return;
 
   const sheetData = [];
 
-  // 🔹 HEADER
   const headers = [
     "S.No",
+    "Date",
     "Invoice Number",
     "Customer",
     "Place",
     "Phone",
     "Product Details",
     "Qty",
-    "Rate",
+    "Discount",
+    "Final Rate",
     "Amount",
-     "Total Bags",
+    "Total Bags",
+    "Rejected Bags",
     "Total Amount",
-     "Advance Amount",
+    "Received Amount",
     "Cash",
     "UPI",
     "Cheque",
+    "Total Paid Amount",
     "Pending",
+    "Return ",
   ];
 
   sheetData.push(headers);
 
   let rowIndex = 1;
   const merges = [];
-
+  
   filteredRows.forEach((r, index) => {
     const startRow = rowIndex;
-const totalBags = (r.products || []).reduce(
-  (sum, p) => sum + (p.quantity || 0),
-  0
-);
-    // 🔹 CUSTOMER ROW
+
+    const totalBags = (r.products || []).reduce(
+      (sum, p) => sum + (p.quantity || 0),
+      0
+    );
+    const returnamount = (r.products || []).reduce(
+      (sum, p) => sum + ((p.returned_quantity || 0) * (p.final_rate || 0)),
+      0
+    )
+// const formattedDate = new Date(r.created_at).toLocaleString("en-IN", {
+//   day: "2-digit",
+//   month: "2-digit",
+//   year: "numeric",
+//   hour: "2-digit",
+//   minute: "2-digit",
+//   second: "2-digit",
+//   hour12: true, // change to false if you want 24-hour
+// });
+    // ✅ CUSTOMER ROW (16 columns EXACT)
     sheetData.push([
       index + 1,
+      new Date(r.created_at),
       r.invoice_number,
       r.customer_name,
-      r.place || "",
+      r.customer_address || "",
       r.phone_number,
-      "",
-      "",
-      "",
-      "",
+      "", "", "", "","", // Product columns empty
       totalBags,
-      r.grand_total,
-      r.advance_paid || "",
-      r.cash_amount || "",
-      r.upi_amount || "",
-      r.cheque_amount || "",
-      r.balance_due,
+      "", // Rejected Bags (if applicable)
+     Number(r.grand_total),
+     Number(r.advance_paid)|| 0,
+      Number(r.cash_amount) || 0,
+      Number(r.upi_amount) || 0,
+     Number(r.cheque_amount) || 0,
+     Number(r.total_paid_amount) || 0,
+      Number(r.balance_due) || 0,
     ]);
 
     rowIndex++;
-  console.log("sheetData", sheetData);
-    // 🔹 PRODUCT ROWS
-    (r.products || []).forEach((p) => {
-    sheetData.push([
-  "",
-  "   " + (p.product_name || ""),
-  "",
-  "",
-  `${p.product_name || ""} | ${p.product_brand || ""} | ${p.product_category || ""} |${p.product_quantity || ""} (${p.quantity} × ${p.rate})`,
-  p.quantity,
-  p.rate,
-  p.quantity * p.rate,
-  "",
-  "",
-  "",
-  "",
-  "",
-]);
 
-      // 🔥 MERGE Product Details columns (E to H)
+    // ✅ PRODUCT ROWS (ALIGNED WITH HEADER)
+    (r.products || []).forEach((p) => {
+      sheetData.push([
+        "", // S.No
+        "", // Date
+        "", // Invoice
+        "", // Customer
+        "", // Place
+        "", // Phone
+        `${p.product_name || ""} | ${p.product_brand || ""} | ${p.product_category || ""} | ${p.product_quantity || ""}`,
+        
+        Number(p.quantity || 0),
+        Number(p.discount_amount || 0),
+        Number(p.final_rate)|| 0,
+        Number(p.total) || 0,
+       
+        "",
+         Number(p.returned_quantity || 0),
+         "", "", "", "", "", "","",
+         returnamount,
+      ]);
+
+      // ✅ Merge ONLY Product Details column (E)
       merges.push({
-        s: { r: rowIndex, c: 4 },
-        e: { r: rowIndex, c: 7 },
+        s: { r: rowIndex, c: 6 },
+        e: { r: rowIndex, c: 6 },
       });
 
       rowIndex++;
     });
 
-    // 🔥 MERGE CUSTOMER ROW (A-D columns)
-    merges.push({
-      s: { r: startRow, c: 0 },
-      e: { r: rowIndex - 1, c: 0 },
-    });
-    merges.push({
-      s: { r: startRow, c: 1 },
-      e: { r: rowIndex - 1, c: 1 },
-    });
-    merges.push({
-      s: { r: startRow, c: 2 },
-      e: { r: rowIndex - 1, c: 2 },
-    });
-    merges.push({
-      s: { r: startRow, c: 3 },
-      e: { r: rowIndex - 1, c: 3 },
-    });
+    // ✅ Merge customer columns vertically
+    for (let col = 0; col <= 5; col++) {
+      merges.push({
+        s: { r: startRow, c: col },
+        e: { r: rowIndex - 1, c: col },
+      });
+    }
 
     sheetData.push([]);
     rowIndex++;
@@ -299,64 +498,53 @@ const totalBags = (r.products || []).reduce(
 
   const ws = XLSX.utils.aoa_to_sheet(sheetData);
 
-  // 🔥 APPLY MERGES
   ws["!merges"] = merges;
 
-  // 🔹 HEADER STYLE (BOLD)
-  headers.forEach((_, col) => {
-    const cell = XLSX.utils.encode_cell({ r: 0, c: col });
-    if (ws[cell]) {
-      ws[cell].s = {
-        font: { bold: true, sz: 14 },
-        alignment: { horizontal: "center" },
-      };
-    }
-  });
-  Object.keys(ws).forEach((cellKey) => {
-  if (cellKey[0] === "!") return;
-
-  const col = cellKey.replace(/[0-9]/g, ""); // get column letter
-  const cell = ws[cellKey];
-
-  if (col === "E") {
-    cell.s = {
-      ...(cell.s || {}),
-      font: { bold: true, sz: 13 }, // optional bold
-      alignment: { wrapText: true, vertical: "center" },
-      // border: {
-      //   top: { style: "thin" },
-      //   bottom: { style: "thin" },
-      //   left: { style: "thin" },
-      //   right: { style: "thin" },
-      // },
-    };
-  }
-});
-
-
-  // 🔹 COLUMN WIDTH
+  // ✅ Column widths (18 columns)
   ws["!cols"] = [
-    { wch: 6 },
-    { wch: 20 },
-    { wch: 15 },
-    { wch: 15 },
-    { wch: 25 },
-    { wch: 8 },
-    { wch: 10 },
-    { wch: 12 },
-    { wch: 12 },
-    { wch: 15 },
-    { wch: 10 },
-    { wch: 10 },
-    { wch: 12 },
-  ];
+  { wch: 6 },   // S.No
+  { wch: 18 },  // Date
+  { wch: 20 },  // Invoice
+  { wch: 20 },  // Customer
+  { wch: 18 },  // Place
+  { wch: 15 },  // Phone
+  { wch: 35 },  // Product Details ✅ correct index
+  { wch: 8 },   // Qty
+  { wch: 12 },  // Discount
+  { wch: 12 },  // Final Rate
+  { wch: 12 },  // Amount
+  { wch: 14 },  // Total Bags
+  { wch: 14 },  // Total Amount
+  { wch: 12 },  // Advance
+  { wch: 10 },  // Cash
+  { wch: 10 },  // UPI
+  { wch: 10 },  // Cheque
+  { wch: 15 },  // Total Paid
+  { wch: 12 },  // Pending
+];
 
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Delivery Report");
 
   XLSX.writeFile(wb, "customer-billing-report.xlsx");
 };
-    useEffect(() => {
+
+useEffect(() => {
+  const closePopup = () => {
+    setActiveDeleteId(null);
+    setDeleteBoxPosition(null);
+  };
+
+  window.addEventListener("scroll", closePopup, true);
+  window.addEventListener("resize", closePopup);
+
+  return () => {
+    window.removeEventListener("scroll", closePopup, true);
+    window.removeEventListener("resize", closePopup);
+  };
+}, []);
+
+useEffect(() => {
   const closePopup = () => {
     setActiveDeleteId(null);
     setDeleteBoxPosition(null);
@@ -452,7 +640,7 @@ const totalBags = (r.products || []).reduce(
               </div>
 
               <div className="d-flex gap-2 flex-wrap justify-content-md-end mt-3 mt-md-0">
-                <button className="excel-btn" onClick={exportExcel}>
+                <button className="excel-btn" onClick={excelExport}>
                   <i className="fi fi-tr-file-excel"></i> Export Excel
                 </button>     
               </div>
@@ -508,6 +696,12 @@ const totalBags = (r.products || []).reduce(
             >
               <i className="bi bi-printer" />
             </button>
+            <button
+              className="btn btn-sm"
+             style={{ backgroundColor: "rgb(81, 102, 161)", color: "#fff" }}              onClick={() => navigate(`/accounts/returnproduct-list/${r.id}`)}
+            >
+              <i className="bi  bi-box-arrow-in-down"></i>
+            </button>
              {isAdmin &&(
             <button
               className="btn btn-sm btn-warning"
@@ -553,9 +747,11 @@ const totalBags = (r.products || []).reduce(
             <div className="small text-muted mb-1">
               Admin Password
             </div>
-
-            <input
+             <input type="password" style={{ display: "none" }} />
+           <input
               type="password"
+              name={`password_${activeEditId}`}   // dynamic name helps
+              autoComplete="new-password"
               className="form-control form-control-sm mb-2"
               value={password}
               onChange={(e) => setPassword(e.target.value)}

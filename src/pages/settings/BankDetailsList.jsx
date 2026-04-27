@@ -93,16 +93,29 @@ export const BankDetailsList = () => {
                 <p>
                   <b>IFSC:</b> {bank.ifsc_code}
                 </p>
-                <p>
-                  <b>Status:</b>{" "}
-                  <span
-                    className={`badge ${
-                      bank.status === "active" ? "bg-success" : "bg-secondary"
-                    }`}
-                  >
-                    {bank.status}
-                  </span>
-                </p>
+          <div className="mb-0 d-flex gap-3 align-items-center">
+  <div>
+    <b>Status:</b>{" "}
+    <span
+      className={`badge ${
+        bank.status === "active" ? "bg-success" : "bg-secondary"
+      }`}
+    >
+      {bank.status}
+    </span>
+  </div>
+
+  <div>
+    <b>Selected:</b>{" "}
+    <span
+      className={`badge ${
+        bank.is_primary ? "bg-success" : "bg-secondary"
+      }`}
+    >
+      {bank.is_primary ? "Yes" : "No"}
+    </span>
+  </div>
+</div>
               </div>
 
               {/* ACTION ICONS */}
