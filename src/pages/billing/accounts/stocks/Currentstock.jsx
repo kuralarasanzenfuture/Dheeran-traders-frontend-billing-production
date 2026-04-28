@@ -187,6 +187,7 @@ const excelExport = () => {
     "Product Name",
     "Brand",
     "Category",
+    "Quantity",
     "Stock",
     "Price"
   ];
@@ -207,6 +208,7 @@ const excelExport = () => {
       p.product_name || "",
       p.brand || "-",
       p.category || "-",
+      p.quantity || "",
       Number(p.stock ?? 0),
       Number(p.price ?? 0),
     ]);
@@ -221,7 +223,7 @@ const excelExport = () => {
   );
 
   sheetData.push([]);
-  sheetData.push(["", "", "", "", "Total Stock", totalStock]);
+  sheetData.push(["", "", "", "", "", "Total Stock", totalStock]);
 
   // ✅ Create Sheet
   const ws = XLSX.utils.aoa_to_sheet(sheetData);
